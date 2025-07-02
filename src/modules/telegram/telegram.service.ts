@@ -40,14 +40,16 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
   private registerHandlers() {
     // Регистрируем обработчики
-    this.bot.command('start', (ctx) => {
+    this.bot.command('start', async (ctx) => {
       this.logger.debug(`User ${ctx.from?.id} started the bot`);
+      ctx.react('🤩');
       return ctx.reply('Добро пожаловать. Бот запущен и работает!');
     });
 
-    this.bot.on('message', (ctx) => {
+    this.bot.on('message:text', async (ctx) => {
       this.logger.debug(`User ${ctx.from?.id} sent a message`);
       if (ctx.message.text) {
+        ctx.react('👍');
         return ctx.reply(`Ты написал: ${ctx.message.text}`);
       }
     });
