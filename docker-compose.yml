@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: foodscan_app
+    env_file:
+      - .env
+    ports:
+      - '${PORT}:${PORT}'
+    depends_on:
+      - redis
+    networks:
+      - foodscan_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: foodscan_redis
+    ports:
+      - '${REDIS_PORT}:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - foodscan_network
+
+networks:
+  foodscan_network:
+    driver: bridge
+
+volumes:
+  redis_data:
