@@ -47,10 +47,15 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     this.registerCommonHandlers();
     this.registerPaymentHandlers();
     this.registerTextHandler();
-    // Запускаем бота в режиме polling.
-    // В продакшене лучше использовать вебхуки.
-    this.bot.start();
-    this.logger.log('Telegram bot started successfully!');
+
+    try {
+      this.logger.log('Attempting to start bot polling...');
+      // Запускаем бота в режиме polling.
+      this.bot.start();
+      this.logger.log('Bot polling process has been initiated.');
+    } catch (error) {
+      this.logger.error('Failed to start Telegram bot polling!', error);
+    }
   }
 
   async onModuleDestroy() {
