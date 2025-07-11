@@ -1,6 +1,7 @@
 import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { HealthCheckService, HttpHealthIndicator } from '@nestjs/terminus';
 import { RedisHealthIndicator } from './indicators/redis.health';
+import { MariaDbHealthIndicator } from './indicators/mariadb.health';
 
 @Injectable()
 export class StartupHealthService implements OnApplicationBootstrap {
@@ -10,6 +11,7 @@ export class StartupHealthService implements OnApplicationBootstrap {
     private readonly health: HealthCheckService,
     private readonly http: HttpHealthIndicator,
     private readonly redis: RedisHealthIndicator,
+    private readonly mariadb: MariaDbHealthIndicator,
   ) {}
 
   /**
@@ -25,6 +27,7 @@ export class StartupHealthService implements OnApplicationBootstrap {
       await this.health.check([
         () => this.http.pingCheck('google', 'https://www.google.com'),
         () => this.redis.check('redis'),
+        () => this.mariadb.check('mariadb'),
       ]);
 
       // Если мы дошли до сюда, значит, все проверки прошли успешно

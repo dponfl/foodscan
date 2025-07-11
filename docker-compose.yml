@@ -10,6 +10,7 @@ services:
       - '${PORT}:${PORT}'
     depends_on:
       - redis
+      - mariadb
     networks:
       - foodscan_network
 
@@ -23,9 +24,26 @@ services:
     networks:
       - foodscan_network
 
+  mariadb:
+    image: mariadb:10.6 # Используем официальный образ MariaDB
+    container_name: foodscan_mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # Пароль для root
+      MYSQL_DATABASE: ${DB_DATABASE} # Имя создаваемой БД
+      MYSQL_USER: ${DB_USERNAME} # Имя создаваемого пользователя
+      MYSQL_PASSWORD: ${DB_PASSWORD} # Пароль для этого пользователя
+    ports:
+      - '${DB_PORT}:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql # Сохраняем данные БД между перезапусками
+    networks:
+      - foodscan_network
+
 networks:
   foodscan_network:
     driver: bridge
 
 volumes:
   redis_data:
+  mariadb_data:
