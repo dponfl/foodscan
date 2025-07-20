@@ -7,6 +7,7 @@ import { DatabaseModule } from './modules/database/database.module';
 import { RedisModule } from './modules/redis/index';
 import { HealthModule } from './modules/health/index';
 import { UsersModule } from './modules/users/index';
+import { OpenAiModule } from './modules/openai/openai.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from './modules/users/index';
     RedisModule,
     TelegramModule,
     HealthModule,
+    OpenAiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
