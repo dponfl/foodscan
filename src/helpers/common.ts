@@ -15,13 +15,13 @@ export class CommonHelpers {
    * Приостанавливает выполнение на указанное количество миллисекунд.
    * @param ms - Время задержки в миллисекундах.
    */
-  static sleep(ms: number): Promise<undefined>;
+  // static sleep(ms: number): Promise<undefined>;
   /**
    * Приостанавливает выполнение и возвращает указанное значение.
    * @param ms - Время задержки в миллисекундах.
    * @param value - Значение, которое будет возвращено после задержки.
    */
-  static sleep<T>(ms: number, value: T): Promise<T>;
+  // static sleep<T>(ms: number, value: T): Promise<T>;
 
   // Реализация
   static sleep<T>(ms: number, value?: T): Promise<T | undefined> {

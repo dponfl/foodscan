@@ -9,19 +9,23 @@ export class ConversationHome {
     return new Menu<MyContext>('home')
       .text('Conversation 1', async (ctx) => {
         console.log('111');
-        await ctx.conversation.enter('convOne');
+        // await ctx.conversation.exitOne;
         console.log('222');
-        await ctx.conversation.exitOne;
+        await ctx.conversation.enter('convOne');
+        console.log('333');
       })
-      .text('Conversation 2', (ctx) => ctx.conversation.enter('convTwo'));
+      .text(
+        'Conversation 2',
+        async (ctx) => await ctx.conversation.enter('convTwo'),
+      );
   }
 
   static menuBackHome() {
     return new Menu<MyContext>('backHome').text('Back', async (ctx) => {
-      console.log('333');
-      await ctx.conversation.enter('home');
       console.log('444');
       await ctx.conversation.exitOne;
+      console.log('555');
+      await ctx.conversation.enter('home');
     });
   }
 

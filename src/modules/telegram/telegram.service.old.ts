@@ -218,75 +218,75 @@ export class TelegramServiceOld implements OnModuleInit, OnModuleDestroy {
     });
 
     // 2. Запускаем цикл, давая пользователю до 3-х попыток
-    for (let i = 0; i < 3; i++) {
-      // На каждой итерации заново "устраиваем гонку"
-      const messageCtx = await Promise.race([
-        conversation.waitFor('message'), // Промис 1: Ждём любого сообщения, waitFor вернёт нам "внутренний" контекст без сессии.
-        conversation.waitFor('callback_query:data'),
-        CommonHelpers.sleep(300000), // Промис 2: Ждём 5 минут
-      ]);
+    // for (let i = 0; i < 3; i++) {
+    //   // На каждой итерации заново "устраиваем гонку"
+    //   const messageCtx = await Promise.race([
+    //     conversation.waitFor('message'), // Промис 1: Ждём любого сообщения, waitFor вернёт нам "внутренний" контекст без сессии.
+    //     conversation.waitFor('callback_query:data'),
+    //     CommonHelpers.sleep(300000), // Промис 2: Ждём 5 минут
+    //   ]);
 
-      // 3. Проверяем, победил ли тайм-аут
-      if (messageCtx === undefined) {
-        await ctx.reply(
-          'Время ожидания вышло. Вы были возвращены в главное меню.',
-        );
-        await conversation.external(() => this.handleHomeCommand(ctx));
-        return; // Полностью выходим из диалога
-      } else if (messageCtx.callbackQuery?.data === 'go_home') {
-        // ЛОГИКА НАЖАТИЯ КНОПКИ "НАЗАД"
-        await messageCtx.answerCallbackQuery();
-        await conversation.external(() => this.handleHomeCommand(ctx));
-        return;
-      }
+    //   // 3. Проверяем, победил ли тайм-аут
+    //   if (messageCtx === undefined) {
+    //     await ctx.reply(
+    //       'Время ожидания вышло. Вы были возвращены в главное меню.',
+    //     );
+    //     await conversation.external(() => this.handleHomeCommand(ctx));
+    //     return; // Полностью выходим из диалога
+    //   } else if (messageCtx.callbackQuery?.data === 'go_home') {
+    //     // ЛОГИКА НАЖАТИЯ КНОПКИ "НАЗАД"
+    //     await messageCtx.answerCallbackQuery();
+    //     await conversation.external(() => this.handleHomeCommand(ctx));
+    //     return;
+    //   }
 
-      // 4. Если мы здесь, значит, пришло сообщение. Проверяем его тип.
+    //   // 4. Если мы здесь, значит, пришло сообщение. Проверяем его тип.
 
-      if (messageCtx.message && messageCtx.message.photo) {
-        // СЛУЧАЙ УСПЕХА: Пользователь прислал фото. Используем conversation.external() для ЗАПИСИ в сессию.
+    //   if (messageCtx.message && messageCtx.message.photo) {
+    //     // СЛУЧАЙ УСПЕХА: Пользователь прислал фото. Используем conversation.external() для ЗАПИСИ в сессию.
 
-        await conversation.external(async (externalCtx) => {
-          externalCtx.session.photo = messageCtx.message.photo;
-        });
+    //     await conversation.external(async (externalCtx) => {
+    //       externalCtx.session.photo = messageCtx.message.photo;
+    //     });
 
-        // await messageCtx.reactions('👍');
+    //     // await messageCtx.reactions('👍');
 
-        await messageCtx.reply(
-          'Отлично! Я анализирую состав продукта, это может занять некоторое время...',
-        );
+    //     await messageCtx.reply(
+    //       'Отлично! Я анализирую состав продукта, это может занять некоторое время...',
+    //     );
 
-        await messageCtx.replyWithChatAction('typing');
+    //     await messageCtx.replyWithChatAction('typing');
 
-        const analysisResult =
-          await this.openAiService.analyzeProductComposition(
-            messageCtx.message.photo,
-          );
+    //     const analysisResult =
+    //       await this.openAiService.analyzeProductComposition(
+    //         messageCtx.message.photo,
+    //       );
 
-        if (analysisResult.status === 'Success' && analysisResult.payload) {
-          const successMessage =
-            '🔎 Разбор состава:\n' +
-            `${analysisResult.payload}\n\n` +
-            '❤️ Заботься о себе — ты то, что ты ешь!';
-          await messageCtx.reply(successMessage, { parse_mode: 'Markdown' });
-        } else {
-          await messageCtx.reply(
-            'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
-          );
-        }
+    //     if (analysisResult.status === 'Success' && analysisResult.payload) {
+    //       const successMessage =
+    //         '🔎 Разбор состава:\n' +
+    //         `${analysisResult.payload}\n\n` +
+    //         '❤️ Заботься о себе — ты то, что ты ешь!';
+    //       await messageCtx.reply(successMessage, { parse_mode: 'Markdown' });
+    //     } else {
+    //       await messageCtx.reply(
+    //         'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
+    //       );
+    //     }
 
-        await conversation.external(() => this.handleHomeCommand(ctx));
-        return; // Успешно завершаем и выходим из диалога
-      } else {
-        // СЛУЧАЙ ОШИБКИ ВВОДА: Пользователь прислал что-то другое
+    //     await conversation.external(() => this.handleHomeCommand(ctx));
+    //     return; // Успешно завершаем и выходим из диалога
+    //   } else {
+    //     // СЛУЧАЙ ОШИБКИ ВВОДА: Пользователь прислал что-то другое
 
-        const errorMessage =
-          '❗ Кажется, это не фото упаковки.\n' +
-          'Чтобы я смог провести анализ, мне нужен состава продукта (фото списка ингредиентов и т.д.).\n\n' +
-          '🔁 Пожалуйста, отправь мне фото состава — и я сразу начну проверку!';
+    //     const errorMessage =
+    //       '❗ Кажется, это не фото упаковки.\n' +
+    //       'Чтобы я смог провести анализ, мне нужен состава продукта (фото списка ингредиентов и т.д.).\n\n' +
+    //       '🔁 Пожалуйста, отправь мне фото состава — и я сразу начну проверку!';
 
-        await messageCtx.reply(errorMessage, { reply_markup: backKeyboard });
-      }
-    }
+    //     await messageCtx.reply(errorMessage, { reply_markup: backKeyboard });
+    //   }
+    // }
 
     // 5. Этот код выполнится, если все 3 попытки были неудачными
     await ctx.reply(
