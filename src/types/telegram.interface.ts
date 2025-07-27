@@ -1,9 +1,13 @@
-import { ConversationFlavor } from '@grammyjs/conversations';
 import { Context, SessionFlavor } from 'grammy';
 
+export type WaitingForInput = 'support_message' | 'product_photo' | null;
 export interface ISessionData {
-  name?: string;
-  email?: string;
+  tgName?: string;
+  tgId?: number;
+  tgNickname?: string;
+  currentScene: string; // Имя текущей сцены
+  waitingForInput?: WaitingForInput; // Какого ввода мы ждём
+  sceneEntryTime?: number | null; // Время входа в сцену с ожиданием
 }
 export interface ITelegramPaymentProduct {
   amount: number;
@@ -18,6 +22,9 @@ export interface ITelegramStarsPaymentPayload {
   products: ITelegramPaymentProduct[];
 }
 
-export type MyContext = ConversationFlavor<
-  Context & SessionFlavor<ISessionData>
->;
+export interface IScene {
+  SCENE_NAME: string;
+  handle: (ctx: MyContext) => Promise<void>; // Метод для входа в сцену
+}
+
+export type MyContext = Context & SessionFlavor<ISessionData>;

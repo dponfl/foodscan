@@ -4,37 +4,10 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import { RedisAdapter } from '@grammyjs/storage-redis';
-import { RedisService } from '../redis';
-import { ConfigService } from '@nestjs/config';
-import {
-  Bot,
-  Context,
-  session,
-  type SessionFlavor,
-  InputFile,
-  InlineKeyboard,
-} from 'grammy';
-import { Menu } from '@grammyjs/menu';
-import { hydrate, type HydrateFlavor } from '@grammyjs/hydrate';
-import {
-  Conversation,
-  ConversationFlavor,
-  conversations,
-  createConversation,
-} from '@grammyjs/conversations';
-import { ITelegramStarsPaymentPayload } from 'src/types';
-import { UsersService } from '../users';
-import { OpenAiService } from '../openai';
-import * as path from 'path';
-import { CommonHelpers } from '../../helpers/common';
-import { TELEGRAM_BOT_MESSAGES } from './telegram.constants';
-import {
-  ConversationHome,
-  ConversationOne,
-  ConversationTwo,
-} from './conversations';
-import { ISessionData, MyContext } from '../../types';
+import { Bot } from 'grammy';
+import { MyContext } from '../../types';
+import { ScenesOrchestratorService } from './scenes/scenes-orchestrator.service';
+import { BotConfigService } from './bot-config/bot-config.service';
 
 @Injectable()
 export class TelegramService implements OnModuleInit, OnModuleDestroy {
@@ -45,43 +18,11 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   });
 
   constructor(
-    private readonly configService: ConfigService,
-    private readonly usersService: UsersService,
-    private readonly openAiService: OpenAiService,
-    private readonly redisService: RedisService,
+    private readonly botConfigService: BotConfigService,
+    // Оркестратор внедряется, чтобы NestJS его создал и запустил
+    private readonly scenesOrchestratorService: ScenesOrchestratorService,
   ) {
-    const tgToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
-    if (!tgToken) {
-      throw new Error(
-        'TELEGRAM_BOT_TOKEN is not defined in environment variables!',
-      );
-    }
-    this.bot = new Bot<MyContext>(tgToken);
-
-    this.bot.use(session({ initial: () => ({}) }));
-
-    const menuHome = ConversationHome.menu();
-
-    const menuBackHome = ConversationHome.menuBackHome();
-
-    this.bot.use(conversations());
-    this.bot.use(
-      createConversation(ConversationHome.conversation, ConversationHome.name),
-    );
-    this.bot.use(
-      createConversation(ConversationOne.conversation, ConversationOne.name),
-    );
-    this.bot.use(
-      createConversation(ConversationTwo.conversation, ConversationTwo.name),
-    );
-
-    this.bot.use(menuHome);
-    this.bot.use(menuBackHome);
-
-    this.bot.command('start', async (ctx) => {
-      await ctx.reply('Welcome from the /start command!');
-      await ctx.conversation.enter('home');
-    });
+    this.bot = botConfigService.getBot();
   }
 
   private registerErrorHandler() {
@@ -112,19 +53,15 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('Starting Telegram bot...');
     this.registerErrorHandler();
 
-    try {
-      this.logger.log('Attempting to start bot polling...');
-      // Запускаем бота в режиме polling.
-      this.bot.start();
-      this.logger.log('Bot polling process has been initiated.');
-    } catch (error) {
-      this.logger.error('Failed to start Telegram bot polling!', error);
-    }
+    this.logger.log('Attempting to start bot polling...');
+    // Запускаем бота в режиме polling.
+    this.bot.start();
+    this.logger.log('Bot polling process has been initiated.');
   }
 
   async onModuleDestroy() {
     this.logger.log('Stopping Telegram bot...');
-    // this.bot.stop();
+    this.bot.stop();
     this.logger.log('Telegram bot stopped successfully!');
   }
 }
