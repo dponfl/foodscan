@@ -53,9 +53,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     // Устанавливаем пользовательские команды
 
     await this.bot.api.setMyCommands([
-      { command: 'start', description: 'Запустить бота' },
-      { command: 'help', description: 'Показать текст для справки' },
-      { command: 'settings', description: 'Открыть настройки' },
+      { command: 'start', description: 'Запустить бот' },
+      { command: 'check', description: 'Анализ нового продукта' },
+      { command: 'pricing', description: 'Тарифы и условия подписки' },
+      { command: 'buy', description: 'Оплата сервиса' },
+      { command: 'profile', description: 'Статистика' },
+      { command: 'help', description: 'Справка по боту и инструкции' },
     ]);
   }
 
