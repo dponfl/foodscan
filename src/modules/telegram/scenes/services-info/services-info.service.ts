@@ -5,7 +5,7 @@ import { CALLBACK_DATA, SCENES } from '../scenes.constants';
 
 @Injectable()
 export class ServicesInfoSceneService implements IScene {
-  readonly SCENE_NAME = SCENES.SERVICES_INFO;
+  readonly SCENE_NAME = SCENES.CHECK_PRODUCT;
 
   async handle(ctx: MyContext): Promise<void> {
     ctx.session.waitingForInput = null;

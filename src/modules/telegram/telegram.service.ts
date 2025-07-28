@@ -49,9 +49,22 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  private async setCommands(): Promise<void> {
+    // Устанавливаем пользовательские команды
+
+    await this.bot.api.setMyCommands([
+      { command: 'start', description: 'Запустить бота' },
+      { command: 'help', description: 'Показать текст для справки' },
+      { command: 'settings', description: 'Открыть настройки' },
+    ]);
+  }
+
   async onModuleInit() {
     this.logger.log('Starting Telegram bot...');
     this.registerErrorHandler();
+
+    this.logger.log('Setting up commands...');
+    await this.setCommands();
 
     this.logger.log('Attempting to start bot polling...');
     // Запускаем бота в режиме polling.

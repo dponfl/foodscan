@@ -12,11 +12,16 @@ export class MainMenuSceneService implements IScene {
    * Этот метод не зависит от 'ctx' и может быть вызван откуда угодно.
    */
   public getMainMenuPayload(): { text: string; keyboard: InlineKeyboard } {
-    const text = 'Вы в главном меню. Куда отправимся дальше?';
+    const text = `Ты в главном меню. Что будем делать?
+Выбирай нужный пункт ниже — и продолжим 👇
+`;
     const keyboard = new InlineKeyboard()
-      .text('ℹ️ Услуги', CALLBACK_DATA.GO_TO_SERVICES)
+      .text('🔍 Проверить продукт', CALLBACK_DATA.GO_TO_CHECK_PRODUCT)
       .row()
-      .text('🆘 Поддержка', CALLBACK_DATA.GO_TO_SUPPORT);
+      .text('💡 Тарифы и возможности', CALLBACK_DATA.GO_TO_PRICES)
+      .row()
+      .text('📊 Статистика', CALLBACK_DATA.GO_TO_STATISTICS)
+      .text('⚙️ Поддержка', CALLBACK_DATA.GO_TO_SUPPORT);
 
     return { text, keyboard };
   }

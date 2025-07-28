@@ -2,13 +2,17 @@
 export enum SCENES {
   START = 'start',
   MAIN_MENU = 'main_menu',
-  SERVICES_INFO = 'services_info',
+  CHECK_PRODUCT = 'check_product',
+  PRICES = 'prices',
+  STATISTICS = 'statistics',
   SUPPORT = 'support',
 }
 
 export enum CALLBACK_DATA {
   GO_TO_MAIN_MENU = 'go_to_main_menu',
-  GO_TO_SERVICES = 'go_to_services',
+  GO_TO_CHECK_PRODUCT = 'go_to_check_product',
+  GO_TO_PRICES = 'go_to_prices',
+  GO_TO_STATISTICS = 'go_to_statistics',
   GO_TO_SUPPORT = 'go_to_support',
 }
 

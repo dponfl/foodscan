@@ -49,8 +49,14 @@ export class ScenesOrchestratorService {
         case CALLBACK_DATA.GO_TO_MAIN_MENU:
           await this.goToScene(ctx, SCENES.MAIN_MENU);
           break;
-        case CALLBACK_DATA.GO_TO_SERVICES:
-          await this.goToScene(ctx, SCENES.SERVICES_INFO);
+        case CALLBACK_DATA.GO_TO_CHECK_PRODUCT:
+          await this.goToScene(ctx, SCENES.CHECK_PRODUCT);
+          break;
+        case CALLBACK_DATA.GO_TO_PRICES:
+          await this.goToScene(ctx, SCENES.PRICES);
+          break;
+        case CALLBACK_DATA.GO_TO_STATISTICS:
+          await this.goToScene(ctx, SCENES.STATISTICS);
           break;
         case CALLBACK_DATA.GO_TO_SUPPORT:
           await this.goToScene(ctx, SCENES.SUPPORT);
@@ -114,7 +120,7 @@ export class ScenesOrchestratorService {
       case SCENES.MAIN_MENU:
         await this.mainMenuScene.handle(ctx);
         break;
-      case SCENES.SERVICES_INFO:
+      case SCENES.CHECK_PRODUCT:
         await this.servicesInfoScene.handle(ctx);
         break;
       case SCENES.SUPPORT:
