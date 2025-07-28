@@ -27,7 +27,7 @@ import { UsersService } from '../users';
 import { OpenAiService } from '../openai';
 import * as path from 'path';
 import { CommonHelpers } from '../../helpers/common';
-import { TELEGRAM_BOT_MESSAGES } from './telegram.constants';
+// import { TELEGRAM_BOT_MESSAGES } from './telegram.constants';
 
 // Определяем кастомный контекст с поддержкой сессий и конверсаций
 interface SessionData {
@@ -56,12 +56,12 @@ export class TelegramServiceOld implements OnModuleInit, OnModuleDestroy {
     'Выбирай нужный пункт ниже и продолжим 👇';
 
   private readonly homeKeyboard = new InlineKeyboard()
-    .text(TELEGRAM_BOT_MESSAGES.homeKeyboard.go_check, 'go_check')
+    .text('TELEGRAM_BOT_MESSAGES.homeKeyboard.go_check', 'go_check')
     .row()
-    .text(TELEGRAM_BOT_MESSAGES.homeKeyboard.go_pricing, 'go_pricing')
+    .text('TELEGRAM_BOT_MESSAGES.homeKeyboard.go_pricing', 'go_pricing')
     .row()
-    .text(TELEGRAM_BOT_MESSAGES.homeKeyboard.go_profile, 'go_profile')
-    .text(TELEGRAM_BOT_MESSAGES.homeKeyboard.go_help, 'go_help');
+    .text('TELEGRAM_BOT_MESSAGES.homeKeyboard.go_profile', 'go_profile')
+    .text('TELEGRAM_BOT_MESSAGES.homeKeyboard.go_help', 'go_help');
 
   constructor(
     private readonly configService: ConfigService,
@@ -156,7 +156,7 @@ export class TelegramServiceOld implements OnModuleInit, OnModuleDestroy {
       );
     }
 
-    await ctx.reply(TELEGRAM_BOT_MESSAGES.introText, {
+    await ctx.reply('TELEGRAM_BOT_MESSAGES.introText', {
       parse_mode: 'Markdown',
       reply_markup: this.homeKeyboard,
     });

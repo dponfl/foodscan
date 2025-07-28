@@ -1,6 +1,7 @@
 import { Context, SessionFlavor } from 'grammy';
+import { WAITING_FOR_INPUT } from '../modules/telegram/scenes/scenes.constants';
 
-export type WaitingForInput = 'support_message' | 'product_photo' | null;
+export type WaitingForInput = WAITING_FOR_INPUT | null;
 export interface ISessionData {
   tgName?: string;
   tgId?: number;

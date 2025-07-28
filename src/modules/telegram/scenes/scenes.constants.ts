@@ -4,6 +4,7 @@ export enum SCENES {
   MAIN_MENU = 'main_menu',
   CHECK_PRODUCT = 'check_product',
   PRICES = 'prices',
+  PAYMENT = 'payment',
   STATISTICS = 'statistics',
   SUPPORT = 'support',
 }
@@ -16,6 +17,12 @@ export enum CALLBACK_DATA {
   GO_TO_SUPPORT = 'go_to_support',
 }
 
+export enum WAITING_FOR_INPUT {
+  PRODUCT_PHOTO = 'product_photo',
+  SUPPORT = 'support',
+}
+
 export enum TIMEOUTS {
   DEFAULT = 5 * 60 * 1000, // 5 минут
+  AFTER_START = 3 * 1000, // 3 секунды
 }

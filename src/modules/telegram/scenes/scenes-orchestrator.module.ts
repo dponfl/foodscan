@@ -3,9 +3,10 @@ import { ScenesOrchestratorService } from './scenes-orchestrator.service';
 import { BotConfigModule } from '../bot-config/bot-config.module';
 import { StartSceneModule } from './start/start.module';
 import { MainMenuSceneModule } from './main-menu/main-menu.module';
-import { ServicesInfoModule } from './services-info/services-info.module';
+import { CheckProductSceneModule } from './check-product/check-product.module';
 import { SupportModule } from './support/support.module';
 import { RedisModule } from '../../redis';
+import { OpenAiModule } from '../../../modules/openai';
 
 @Module({
   imports: [
@@ -13,10 +14,11 @@ import { RedisModule } from '../../redis';
     RedisModule,
     StartSceneModule,
     MainMenuSceneModule,
-    ServicesInfoModule,
+    CheckProductSceneModule,
     SupportModule,
-    ServicesInfoModule,
+    CheckProductSceneModule,
     SupportModule,
+    OpenAiModule,
   ],
   providers: [ScenesOrchestratorService],
   exports: [ScenesOrchestratorService],

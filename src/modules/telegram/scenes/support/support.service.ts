@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IScene, MyContext } from '../../../../types';
 import { InlineKeyboard } from 'grammy';
-import { CALLBACK_DATA, SCENES } from '../scenes.constants';
+import { CALLBACK_DATA, SCENES, WAITING_FOR_INPUT } from '../scenes.constants';
 
 @Injectable()
 export class SupportSceneService implements IScene {
@@ -16,7 +16,7 @@ export class SupportSceneService implements IScene {
     );
 
     // Устанавливаем состояние "ожидания"
-    ctx.session.waitingForInput = 'support_message';
+    ctx.session.waitingForInput = WAITING_FOR_INPUT.SUPPORT;
     ctx.session.sceneEntryTime = Date.now(); // Засекаем время
 
     if (ctx.callbackQuery) {

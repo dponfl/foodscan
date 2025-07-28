@@ -1,14 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisService } from '../../redis';
-import { Bot } from 'grammy';
+import { Bot, InlineKeyboard } from 'grammy';
 import { MyContext } from '../../../types';
 import { BotConfigService } from '../bot-config/bot-config.service';
 import { StartSceneService } from './start/start.service';
 import { MainMenuSceneService } from './main-menu/main-menu.service';
-import { ServicesInfoSceneService } from './services-info/services-info.service';
+import { CheckProductSceneService } from './check-product/check-product.service';
 import { SupportSceneService } from './support/support.service';
-import { CALLBACK_DATA, SCENES, TIMEOUTS } from './scenes.constants';
+import {
+  CALLBACK_DATA,
+  SCENES,
+  TIMEOUTS,
+  WAITING_FOR_INPUT,
+} from './scenes.constants';
+import { OpenAiService } from '../../../modules/openai';
 
 @Injectable()
 export class ScenesOrchestratorService {
@@ -21,8 +27,9 @@ export class ScenesOrchestratorService {
     private readonly redisService: RedisService,
     private readonly startScene: StartSceneService,
     private readonly mainMenuScene: MainMenuSceneService,
-    private readonly servicesInfoScene: ServicesInfoSceneService,
+    private readonly checkProductScene: CheckProductSceneService,
     private readonly supportScene: SupportSceneService,
+    private readonly openAiService: OpenAiService,
   ) {
     this.redisClient = this.redisService.getRedisClient();
 
@@ -31,13 +38,44 @@ export class ScenesOrchestratorService {
   }
 
   private registerHandlers() {
-    // Обработчик команды /start
+    /**
+     * Обработка команд
+     */
+
     this.bot.command('start', async (ctx) => {
       this.logger.log(`Processing /start command for user ${ctx?.from?.id}`);
       ctx.session.currentScene = SCENES.START;
       await this.startScene.handle(ctx);
-      // Сразу после старта переводим в главное меню
-      await this.goToScene(ctx, SCENES.MAIN_MENU);
+
+      // Сразу после старта переводим в главное меню (с задержкой TIMEOUTS.AFTER_START (3 секунды) для визуального эффекта и концентрации внимания пользователя на тексте сообщения /start)
+
+      await ctx.replyWithChatAction('typing');
+
+      setTimeout(
+        async () => await this.goToScene(ctx, SCENES.MAIN_MENU),
+        TIMEOUTS.AFTER_START,
+      );
+    });
+
+    this.bot.command('check', async (ctx) => {
+      this.logger.log(`Processing /check command for user ${ctx?.from?.id}`);
+      ctx.session.currentScene = SCENES.CHECK_PRODUCT;
+      await this.checkProductScene.handle(ctx);
+    });
+
+    this.bot.command('start', async (ctx) => {
+      this.logger.log(`Processing /start command for user ${ctx?.from?.id}`);
+      ctx.session.currentScene = SCENES.START;
+      await this.startScene.handle(ctx);
+
+      // Сразу после старта переводим в главное меню (с задержкой TIMEOUTS.AFTER_START (3 секунды) для визуального эффекта и концентрации внимания пользователя на тексте сообщения /start)
+
+      await ctx.replyWithChatAction('typing');
+
+      setTimeout(
+        async () => await this.goToScene(ctx, SCENES.MAIN_MENU),
+        TIMEOUTS.AFTER_START,
+      );
     });
 
     // ЕДИНЫЙ обработчик для всех нажатий кнопок
@@ -67,41 +105,49 @@ export class ScenesOrchestratorService {
       }
     });
 
-    this.bot.on('message:text', async (ctx) => {
+    const backKeyboard = new InlineKeyboard().text(
+      '🔙 Назад',
+      CALLBACK_DATA.GO_TO_MAIN_MENU,
+    );
+
+    this.bot.on('message:photo', async (ctx) => {
+      const waitingFor = ctx.session.waitingForInput;
+      const photo = ctx.message.photo;
+
+      // Если бот ничего не ожидает от пользователя, выходим
+      if (!waitingFor) return;
+
+      switch (waitingFor) {
+        case WAITING_FOR_INPUT.PRODUCT_PHOTO: {
+          await this.handleProductPhoto(ctx, photo);
+          break;
+        }
+
+        default: {
+          // На случай, если состояние есть, но обработчик для него не найден
+          this.logger.warn(
+            `Unhandled waitingFor state: ${waitingFor} from user ${ctx.from.id}`,
+          );
+          break;
+        }
+      }
+    });
+
+    this.bot.on('message', async (ctx) => {
       const waitingFor = ctx.session.waitingForInput;
       // Если бот ничего не ожидает от пользователя, выходим
       if (!waitingFor) return;
 
       switch (waitingFor) {
-        case 'support_message': {
-          const userQuestion = ctx.message.text;
-
-          this.logger.log(
-            `Received support request from ${ctx.from.id}: ${userQuestion}`,
-          );
-
-          // Здесь будет ваша логика отправки запроса в систему поддержки...
-
+        case WAITING_FOR_INPUT.PRODUCT_PHOTO: {
           await ctx.reply(
-            'Спасибо! Ваш запрос принят. Мы скоро с вами свяжемся.',
+            `❗ Кажется, это не фото упаковки\\. Чтобы я смог провести анализ, мне нужен состава продукта \\(фото списка ингредиентов и т\\.д\\.\\)\\.
+🔁 Пожалуйста, отправь мне фото состава — и я сразу начну проверку\\!
+`,
+            { reply_markup: backKeyboard, parse_mode: 'MarkdownV2' },
           );
-
-          // Очищаем состояние ожидания и возвращаем в главное меню
-          ctx.session.waitingForInput = null;
-          ctx.session.sceneEntryTime = null;
-          await this.mainMenuScene.handle(ctx);
           break;
         }
-
-        // Сюда вы сможете легко добавлять обработку для других состояний.
-        // Например, когда будете реализовывать анализ фото:
-        /*
-            case 'product_photo': {
-                // ... логика обработки отправленного фото ...
-                break;
-            }
-            */
-
         default: {
           // На случай, если состояние есть, но обработчик для него не найден
           this.logger.warn(
@@ -113,6 +159,46 @@ export class ScenesOrchestratorService {
     });
   }
 
+  private async handleProductPhoto(ctx: MyContext, photo: any) {
+    this.logger.log(
+      `Received photo from ${ctx?.from?.id}: ${JSON.stringify(photo)}`,
+    );
+
+    this.logger.log(
+      `Received photo from ${ctx?.from?.id}, photo[0].file_id: ${photo[0].file_id}`,
+    );
+
+    // Логика обработки фотографии
+
+    await ctx.replyWithChatAction('typing');
+
+    await ctx.reply(
+      `Отлично\\! Я анализирую состав продукта, это может занять некоторое время…`,
+      { parse_mode: 'MarkdownV2' },
+    );
+
+    const analysisResult = await this.openAiService.analyzeProductComposition(
+      ctx?.message?.photo,
+    );
+
+    if (analysisResult.status === 'Success' && analysisResult.payload) {
+      const successMessage =
+        '🔎 Разбор состава:\n' +
+        `${analysisResult.payload}\n\n` +
+        '❤️ Заботься о себе — ты то, что ты ешь!';
+      await ctx.reply(successMessage, { parse_mode: 'Markdown' });
+    } else {
+      await ctx.reply(
+        'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
+      );
+    }
+
+    // ВРЕМЕННО: Очищаем состояние ожидания и возвращаем в главное меню
+    ctx.session.waitingForInput = null;
+    ctx.session.sceneEntryTime = null;
+    await this.mainMenuScene.handle(ctx);
+  }
+
   // Вспомогательный метод для смены сцен
   private async goToScene(ctx: MyContext, sceneName: string) {
     ctx.session.currentScene = sceneName;
@@ -121,7 +207,7 @@ export class ScenesOrchestratorService {
         await this.mainMenuScene.handle(ctx);
         break;
       case SCENES.CHECK_PRODUCT:
-        await this.servicesInfoScene.handle(ctx);
+        await this.checkProductScene.handle(ctx);
         break;
       case SCENES.SUPPORT:
         await this.supportScene.handle(ctx);

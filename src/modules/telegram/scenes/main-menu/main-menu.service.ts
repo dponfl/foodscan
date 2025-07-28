@@ -12,7 +12,7 @@ export class MainMenuSceneService implements IScene {
    * Этот метод не зависит от 'ctx' и может быть вызван откуда угодно.
    */
   public getMainMenuPayload(): { text: string; keyboard: InlineKeyboard } {
-    const text = `Ты в главном меню. Что будем делать?
+    const text = `Ты находишся в *главном меню*\\. Что будем делать?
 Выбирай нужный пункт ниже — и продолжим 👇
 `;
     const keyboard = new InlineKeyboard()
@@ -33,11 +33,15 @@ export class MainMenuSceneService implements IScene {
 
     const { text, keyboard } = this.getMainMenuPayload();
 
+    // Если пользователь пришёл по нажатию кнопки, нужно "отпустить" и удалить её,
+    // чтобы убрать индикатор загрузки.
     if (ctx.callbackQuery) {
-      await ctx.editMessageText(text, { reply_markup: keyboard });
+      await ctx.editMessageReplyMarkup();
       await ctx.answerCallbackQuery();
-    } else {
-      await ctx.reply(text, { reply_markup: keyboard });
     }
+
+    // Вне зависимости от того, как пользователь попал в эту сцену,
+    // мы всегда отправляем новое сообщение с главным меню.
+    await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard });
   }
 }

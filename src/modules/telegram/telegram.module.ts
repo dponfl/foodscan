@@ -4,10 +4,7 @@ import { ScenesOrchestratorModule } from './scenes/scenes-orchestrator.module';
 import { BotConfigModule } from './bot-config/bot-config.module';
 
 @Module({
-  imports: [
-    BotConfigModule,
-    ScenesOrchestratorModule, // <-- Импортируем главный модуль сцен
-  ],
+  imports: [BotConfigModule, ScenesOrchestratorModule],
   providers: [TelegramService],
   exports: [TelegramService],
 })
