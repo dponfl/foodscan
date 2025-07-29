@@ -18,7 +18,7 @@ export class MainMenuSceneService implements IScene {
     const keyboard = new InlineKeyboard()
       .text('🔍 Проверить продукт', CALLBACK_DATA.GO_TO_CHECK_PRODUCT)
       .row()
-      .text('💡 Тарифы и возможности', CALLBACK_DATA.GO_TO_PRICES)
+      .text('💡 Тарифы и возможности', CALLBACK_DATA.GO_TO_TARIFFS)
       .row()
       .text('📊 Статистика', CALLBACK_DATA.GO_TO_STATISTICS)
       .text('⚙️ Поддержка', CALLBACK_DATA.GO_TO_SUPPORT);
@@ -28,7 +28,7 @@ export class MainMenuSceneService implements IScene {
 
   async handle(ctx: MyContext): Promise<void> {
     ctx.session.waitingForInput = null;
-    ctx.session.sceneEntryTime = null;
+    ctx.session.sceneEntryTime = Date.now();
     ctx.session.currentScene = this.SCENE_NAME;
 
     const { text, keyboard } = this.getMainMenuPayload();

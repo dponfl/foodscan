@@ -7,6 +7,8 @@ import { CheckProductSceneModule } from './check-product/check-product.module';
 import { SupportModule } from './support/support.module';
 import { RedisModule } from '../../redis';
 import { OpenAiModule } from '../../../modules/openai';
+import { TariffsModule } from './tariffs/tariffs.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { OpenAiModule } from '../../../modules/openai';
     CheckProductSceneModule,
     SupportModule,
     OpenAiModule,
+    TariffsModule,
+    PaymentModule,
   ],
   providers: [ScenesOrchestratorService],
   exports: [ScenesOrchestratorService],

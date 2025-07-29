@@ -15,7 +15,7 @@ export class StartSceneService implements IScene {
 
   async handle(ctx: MyContext): Promise<void> {
     ctx.session.waitingForInput = null;
-    ctx.session.sceneEntryTime = null;
+    ctx.session.sceneEntryTime = Date.now();
     ctx.session.currentScene = this.SCENE_NAME;
 
     const user = ctx.from;

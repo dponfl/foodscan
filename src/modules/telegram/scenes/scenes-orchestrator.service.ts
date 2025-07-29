@@ -15,6 +15,7 @@ import {
   WAITING_FOR_INPUT,
 } from './scenes.constants';
 import { OpenAiService } from '../../../modules/openai';
+import { TariffsSceneService } from './tariffs/tariffs.service';
 
 @Injectable()
 export class ScenesOrchestratorService {
@@ -28,6 +29,7 @@ export class ScenesOrchestratorService {
     private readonly startScene: StartSceneService,
     private readonly mainMenuScene: MainMenuSceneService,
     private readonly checkProductScene: CheckProductSceneService,
+    private readonly tariffsScene: TariffsSceneService,
     private readonly supportScene: SupportSceneService,
     private readonly openAiService: OpenAiService,
   ) {
@@ -63,19 +65,10 @@ export class ScenesOrchestratorService {
       await this.checkProductScene.handle(ctx);
     });
 
-    this.bot.command('start', async (ctx) => {
-      this.logger.log(`Processing /start command for user ${ctx?.from?.id}`);
-      ctx.session.currentScene = SCENES.START;
-      await this.startScene.handle(ctx);
-
-      // Сразу после старта переводим в главное меню (с задержкой TIMEOUTS.AFTER_START (3 секунды) для визуального эффекта и концентрации внимания пользователя на тексте сообщения /start)
-
-      await ctx.replyWithChatAction('typing');
-
-      setTimeout(
-        async () => await this.goToScene(ctx, SCENES.MAIN_MENU),
-        TIMEOUTS.AFTER_START,
-      );
+    this.bot.command('pricing', async (ctx) => {
+      this.logger.log(`Processing /pricing command for user ${ctx?.from?.id}`);
+      ctx.session.currentScene = SCENES.TARIFFS;
+      await this.tariffsScene.handle(ctx);
     });
 
     // ЕДИНЫЙ обработчик для всех нажатий кнопок
@@ -90,8 +83,8 @@ export class ScenesOrchestratorService {
         case CALLBACK_DATA.GO_TO_CHECK_PRODUCT:
           await this.goToScene(ctx, SCENES.CHECK_PRODUCT);
           break;
-        case CALLBACK_DATA.GO_TO_PRICES:
-          await this.goToScene(ctx, SCENES.PRICES);
+        case CALLBACK_DATA.GO_TO_TARIFFS:
+          await this.goToScene(ctx, SCENES.TARIFFS);
           break;
         case CALLBACK_DATA.GO_TO_STATISTICS:
           await this.goToScene(ctx, SCENES.STATISTICS);
@@ -206,6 +199,9 @@ export class ScenesOrchestratorService {
         break;
       case SCENES.CHECK_PRODUCT:
         await this.checkProductScene.handle(ctx);
+        break;
+      case SCENES.TARIFFS:
+        await this.tariffsScene.handle(ctx);
         break;
       case SCENES.SUPPORT:
         await this.supportScene.handle(ctx);
