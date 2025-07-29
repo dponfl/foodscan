@@ -20,6 +20,11 @@ export class StartSceneService implements IScene {
 
     const user = ctx.from;
     if (user) {
+      ctx.session.tgId = ctx.from.id || 0;
+      ctx.session.tgName = ctx.from.first_name || '';
+      ctx.session.tgNickname = ctx.from.username || '';
+      ctx.session.tgLang = ctx.from.language_code || 'ru';
+
       await this.usersService.findOrCreate({
         clientId: user.id,
         userName: user.first_name,

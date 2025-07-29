@@ -6,9 +6,11 @@ export interface ISessionData {
   tgName?: string;
   tgId?: number;
   tgNickname?: string;
+  tgLang?: string;
   currentScene: string; // Имя текущей сцены
   waitingForInput?: WaitingForInput; // Какого ввода мы ждём
   sceneEntryTime?: number | null; // Время входа в сцену с ожиданием
+  photo?: any;
 }
 export interface ITelegramPaymentProduct {
   amount: number;

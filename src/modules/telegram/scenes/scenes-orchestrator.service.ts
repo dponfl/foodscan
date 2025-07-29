@@ -161,12 +161,10 @@ export class ScenesOrchestratorService {
 
   private async handleProductPhoto(ctx: MyContext, photo: any) {
     this.logger.log(
-      `Received photo from ${ctx?.from?.id}: ${JSON.stringify(photo)}`,
-    );
-
-    this.logger.log(
       `Received photo from ${ctx?.from?.id}, photo[0].file_id: ${photo[0].file_id}`,
     );
+
+    ctx.session.photo = photo;
 
     // Логика обработки фотографии
 
