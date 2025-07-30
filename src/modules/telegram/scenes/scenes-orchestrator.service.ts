@@ -109,7 +109,24 @@ export class ScenesOrchestratorService {
             ctx,
             PAYMENT_OPTIONS.ONE_TIME,
           );
-          // await this.goToScene(ctx, SCENES.MAIN_MENU, false, false);
+          break;
+        case CALLBACK_DATA.GO_TO_PAYMENT_OPTION_TWO:
+          await this.paymentProvider.generatePaymentInvoce(
+            ctx,
+            PAYMENT_OPTIONS.THREE_TIMES,
+          );
+          break;
+        case CALLBACK_DATA.GO_TO_PAYMENT_OPTION_THREE:
+          await this.paymentProvider.generatePaymentInvoce(
+            ctx,
+            PAYMENT_OPTIONS.MONTH,
+          );
+          break;
+        case CALLBACK_DATA.GO_TO_PAYMENT_OPTION_FOUR:
+          await this.paymentProvider.generatePaymentInvoce(
+            ctx,
+            PAYMENT_OPTIONS.YEAR,
+          );
           break;
         case CALLBACK_DATA.GO_TO_STATISTICS:
           await this.goToScene(ctx, SCENES.STATISTICS);
@@ -117,9 +134,11 @@ export class ScenesOrchestratorService {
         case CALLBACK_DATA.GO_TO_SUPPORT:
           await this.goToScene(ctx, SCENES.SUPPORT);
           break;
-        // ... другие кейсы
         default:
-          await ctx.answerCallbackQuery('Неизвестная команда!');
+          this.logger.warn(
+            `Unknown callback data: ${callbackData} for chatId: ${ctx?.from?.id}`,
+          );
+          await ctx.answerCallbackQuery();
       }
     });
 

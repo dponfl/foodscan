@@ -25,11 +25,20 @@ export class PaymentSceneService implements IScene {
         CALLBACK_DATA.GO_TO_PAYMENT_OPTION_ONE,
       )
       .row()
-      .text(`📦 10 проверок: 299 ₽ (175 ⭐️)`)
+      .text(
+        `📦 10 проверок: 299 ₽ (175 ⭐️)`,
+        CALLBACK_DATA.GO_TO_PAYMENT_OPTION_TWO,
+      )
       .row()
-      .text(`♾ 1 месяц: 549 ₽ (323 ⭐️)`)
+      .text(
+        `♾ 1 месяц: 549 ₽ (323 ⭐️)`,
+        CALLBACK_DATA.GO_TO_PAYMENT_OPTION_THREE,
+      )
       .row()
-      .text(`🗓 1 год: 3 490 ₽ (2 053 ⭐️)`)
+      .text(
+        `🗓 1 год: 3 490 ₽ (2 053 ⭐️)`,
+        CALLBACK_DATA.GO_TO_PAYMENT_OPTION_FOUR,
+      )
       .row()
       .text(`🔙 Назад`, CALLBACK_DATA.GO_TO_TARIFFS);
 

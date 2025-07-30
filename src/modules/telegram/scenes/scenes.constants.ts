@@ -17,6 +17,9 @@ export enum CALLBACK_DATA {
   GO_TO_STATISTICS = 'go_to_statistics',
   GO_TO_SUPPORT = 'go_to_support',
   GO_TO_PAYMENT_OPTION_ONE = 'go_to_payment_option_one',
+  GO_TO_PAYMENT_OPTION_TWO = 'go_to_payment_option_two',
+  GO_TO_PAYMENT_OPTION_THREE = 'go_to_payment_option_three',
+  GO_TO_PAYMENT_OPTION_FOUR = 'go_to_payment_option_four',
 }
 
 export enum WAITING_FOR_INPUT {
