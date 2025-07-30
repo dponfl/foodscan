@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IScene, MyContext } from '../../../../types';
 import { InlineKeyboard } from 'grammy';
 import { CALLBACK_DATA, SCENES } from '../scenes.constants';
 
 @Injectable()
 export class MainMenuSceneService implements IScene {
+  private readonly logger = new Logger(MainMenuSceneService.name);
+
   readonly SCENE_NAME = SCENES.MAIN_MENU;
 
   /**
@@ -26,7 +28,11 @@ export class MainMenuSceneService implements IScene {
     return { text, keyboard };
   }
 
-  async handle(ctx: MyContext): Promise<void> {
+  async handle(
+    ctx: MyContext,
+    deleteKeyboard: boolean = true,
+    deleteMessage: boolean = false,
+  ): Promise<void> {
     ctx.session.waitingForInput = null;
     ctx.session.sceneEntryTime = Date.now();
     ctx.session.currentScene = this.SCENE_NAME;
@@ -36,8 +42,15 @@ export class MainMenuSceneService implements IScene {
     // Если пользователь пришёл по нажатию кнопки, нужно "отпустить" и удалить её,
     // чтобы убрать индикатор загрузки.
     if (ctx.callbackQuery) {
-      await ctx.editMessageReplyMarkup();
       await ctx.answerCallbackQuery();
+
+      if (deleteKeyboard) {
+        await ctx.editMessageReplyMarkup();
+      }
+
+      if (deleteMessage) {
+        await ctx.deleteMessage();
+      }
     }
 
     // Вне зависимости от того, как пользователь попал в эту сцену,

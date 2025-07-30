@@ -16,6 +16,7 @@ export enum CALLBACK_DATA {
   GO_TO_PAYMENT = 'go_to_payment',
   GO_TO_STATISTICS = 'go_to_statistics',
   GO_TO_SUPPORT = 'go_to_support',
+  GO_TO_PAYMENT_OPTION_ONE = 'go_to_payment_option_one',
 }
 
 export enum WAITING_FOR_INPUT {
@@ -26,4 +27,11 @@ export enum WAITING_FOR_INPUT {
 export enum TIMEOUTS {
   DEFAULT = 5 * 60 * 1000, // 5 минут
   AFTER_START = 3 * 1000, // 3 секунды
+}
+
+export enum PAYMENT_OPTIONS {
+  ONE_TIME = 'one_time',
+  THREE_TIMES = 'three_times',
+  MONTH = 'month',
+  YEAR = 'year',
 }

@@ -10,12 +10,15 @@ import { CheckProductSceneService } from './check-product/check-product.service'
 import { SupportSceneService } from './support/support.service';
 import {
   CALLBACK_DATA,
+  PAYMENT_OPTIONS,
   SCENES,
   TIMEOUTS,
   WAITING_FOR_INPUT,
 } from './scenes.constants';
 import { OpenAiService } from '../../../modules/openai';
 import { TariffsSceneService } from './tariffs/tariffs.service';
+import { PaymentSceneService } from './payment/payment.service';
+import { PaymentProvider } from './payment/payment';
 
 @Injectable()
 export class ScenesOrchestratorService {
@@ -30,6 +33,8 @@ export class ScenesOrchestratorService {
     private readonly mainMenuScene: MainMenuSceneService,
     private readonly checkProductScene: CheckProductSceneService,
     private readonly tariffsScene: TariffsSceneService,
+    private readonly paymentScene: PaymentSceneService,
+    private readonly paymentProvider: PaymentProvider,
     private readonly supportScene: SupportSceneService,
     private readonly openAiService: OpenAiService,
   ) {
@@ -71,6 +76,16 @@ export class ScenesOrchestratorService {
       await this.tariffsScene.handle(ctx);
     });
 
+    // Обработка процесса платежа, произведенного в Telegram Stars
+
+    this.bot.on('pre_checkout_query', async (ctx) => {
+      return ctx.answerPreCheckoutQuery(true).catch(() => {
+        this.logger.error(
+          `answerPreCheckoutQuery failed for clientId: ${ctx.from?.id}`,
+        );
+      });
+    });
+
     // ЕДИНЫЙ обработчик для всех нажатий кнопок
     this.bot.on('callback_query:data', async (ctx) => {
       const callbackData = ctx.callbackQuery.data;
@@ -85,6 +100,16 @@ export class ScenesOrchestratorService {
           break;
         case CALLBACK_DATA.GO_TO_TARIFFS:
           await this.goToScene(ctx, SCENES.TARIFFS);
+          break;
+        case CALLBACK_DATA.GO_TO_PAYMENT:
+          await this.goToScene(ctx, SCENES.PAYMENT);
+          break;
+        case CALLBACK_DATA.GO_TO_PAYMENT_OPTION_ONE:
+          await this.paymentProvider.generatePaymentInvoce(
+            ctx,
+            PAYMENT_OPTIONS.ONE_TIME,
+          );
+          // await this.goToScene(ctx, SCENES.MAIN_MENU, false, false);
           break;
         case CALLBACK_DATA.GO_TO_STATISTICS:
           await this.goToScene(ctx, SCENES.STATISTICS);
@@ -102,6 +127,30 @@ export class ScenesOrchestratorService {
       '🔙 Назад',
       CALLBACK_DATA.GO_TO_MAIN_MENU,
     );
+
+    /**
+     * Обработка сообщений
+     */
+
+    this.bot.on('message:successful_payment', async (ctx) => {
+      if (!ctx.message || !ctx.message.successful_payment || !ctx.from) {
+        return;
+      }
+
+      // TODO: Обработать успешную оплату, сохранить в БД и перевести пользователя в главное меню
+
+      this.logger.log(
+        `Successful payment for clientId ${ctx.from.id}: ${JSON.stringify(
+          ctx.message.successful_payment,
+        )}`,
+      );
+
+      await ctx.reply('⭐ Оплата *прошла успешно* — благодарим за покупку\\!', {
+        parse_mode: 'MarkdownV2',
+      });
+
+      await this.goToScene(ctx, SCENES.MAIN_MENU, false, false);
+    });
 
     this.bot.on('message:photo', async (ctx) => {
       const waitingFor = ctx.session.waitingForInput;
@@ -191,17 +240,25 @@ export class ScenesOrchestratorService {
   }
 
   // Вспомогательный метод для смены сцен
-  private async goToScene(ctx: MyContext, sceneName: string) {
+  private async goToScene(
+    ctx: MyContext,
+    sceneName: string,
+    deleteKeyboard: boolean = true,
+    deleteMessage: boolean = false,
+  ) {
     ctx.session.currentScene = sceneName;
     switch (sceneName) {
       case SCENES.MAIN_MENU:
-        await this.mainMenuScene.handle(ctx);
+        await this.mainMenuScene.handle(ctx, deleteKeyboard, deleteMessage);
         break;
       case SCENES.CHECK_PRODUCT:
         await this.checkProductScene.handle(ctx);
         break;
       case SCENES.TARIFFS:
         await this.tariffsScene.handle(ctx);
+        break;
+      case SCENES.PAYMENT:
+        await this.paymentScene.handle(ctx);
         break;
       case SCENES.SUPPORT:
         await this.supportScene.handle(ctx);

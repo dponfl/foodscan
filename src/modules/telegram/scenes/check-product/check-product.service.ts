@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IScene, MyContext } from '../../../../types';
 import { InlineKeyboard, InputFile } from 'grammy';
 import { CALLBACK_DATA, SCENES, WAITING_FOR_INPUT } from '../scenes.constants';
@@ -6,6 +6,8 @@ import * as path from 'path';
 
 @Injectable()
 export class CheckProductSceneService implements IScene {
+  private readonly logger = new Logger(CheckProductSceneService.name);
+
   readonly SCENE_NAME = SCENES.CHECK_PRODUCT;
 
   async handle(ctx: MyContext): Promise<void> {
