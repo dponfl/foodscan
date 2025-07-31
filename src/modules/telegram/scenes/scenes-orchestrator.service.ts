@@ -78,6 +78,12 @@ export class ScenesOrchestratorService {
       await this.tariffsScene.handle(ctx);
     });
 
+    this.bot.command('buy', async (ctx) => {
+      this.logger.log(`Processing /buy command for user ${ctx?.from?.id}`);
+      ctx.session.currentScene = SCENES.PAYMENT;
+      await this.paymentScene.handle(ctx);
+    });
+
     // Обработка процесса платежа, произведенного в Telegram Stars
 
     this.bot.on('pre_checkout_query', async (ctx) => {
