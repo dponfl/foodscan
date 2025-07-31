@@ -22,7 +22,7 @@ export class MainMenuSceneService implements IScene {
       .row()
       .text('💡 Тарифы и возможности', CALLBACK_DATA.GO_TO_TARIFFS)
       .row()
-      .text('📊 Статистика', CALLBACK_DATA.GO_TO_STATISTICS)
+      .text('📊 Статистика', CALLBACK_DATA.GO_TO_PROFILE)
       .text('⚙️ Поддержка', CALLBACK_DATA.GO_TO_SUPPORT);
 
     return { text, keyboard };

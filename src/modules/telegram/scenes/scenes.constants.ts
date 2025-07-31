@@ -5,7 +5,7 @@ export enum SCENES {
   CHECK_PRODUCT = 'check_product',
   TARIFFS = 'tariffs',
   PAYMENT = 'payment',
-  STATISTICS = 'statistics',
+  PROFILE = 'profile',
   SUPPORT = 'support',
 }
 
@@ -14,7 +14,7 @@ export enum CALLBACK_DATA {
   GO_TO_CHECK_PRODUCT = 'go_to_check_product',
   GO_TO_TARIFFS = 'go_to_tariffs',
   GO_TO_PAYMENT = 'go_to_payment',
-  GO_TO_STATISTICS = 'go_to_statistics',
+  GO_TO_PROFILE = 'go_to_profile',
   GO_TO_SUPPORT = 'go_to_support',
   GO_TO_PAYMENT_OPTION_ONE = 'go_to_payment_option_one',
   GO_TO_PAYMENT_OPTION_TWO = 'go_to_payment_option_two',

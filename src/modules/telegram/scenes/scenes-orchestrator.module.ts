@@ -9,6 +9,7 @@ import { RedisModule } from '../../redis';
 import { OpenAiModule } from '../../../modules/openai';
 import { TariffsModule } from './tariffs/tariffs.module';
 import { PaymentModule } from './payment/payment.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PaymentModule } from './payment/payment.module';
     OpenAiModule,
     TariffsModule,
     PaymentModule,
+    ProfileModule,
   ],
   providers: [ScenesOrchestratorService],
   exports: [ScenesOrchestratorService],

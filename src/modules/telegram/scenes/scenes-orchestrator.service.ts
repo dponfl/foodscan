@@ -19,6 +19,7 @@ import { OpenAiService } from '../../../modules/openai';
 import { TariffsSceneService } from './tariffs/tariffs.service';
 import { PaymentSceneService } from './payment/payment.service';
 import { PaymentProvider } from './payment/payment';
+import { ProfileSceneService } from './profile/profile.service';
 
 @Injectable()
 export class ScenesOrchestratorService {
@@ -35,6 +36,7 @@ export class ScenesOrchestratorService {
     private readonly tariffsScene: TariffsSceneService,
     private readonly paymentScene: PaymentSceneService,
     private readonly paymentProvider: PaymentProvider,
+    private readonly profileScene: ProfileSceneService,
     private readonly supportScene: SupportSceneService,
     private readonly openAiService: OpenAiService,
   ) {
@@ -128,8 +130,8 @@ export class ScenesOrchestratorService {
             PAYMENT_OPTIONS.YEAR,
           );
           break;
-        case CALLBACK_DATA.GO_TO_STATISTICS:
-          await this.goToScene(ctx, SCENES.STATISTICS);
+        case CALLBACK_DATA.GO_TO_PROFILE:
+          await this.goToScene(ctx, SCENES.PROFILE, true, true);
           break;
         case CALLBACK_DATA.GO_TO_SUPPORT:
           await this.goToScene(ctx, SCENES.SUPPORT);
@@ -278,6 +280,9 @@ export class ScenesOrchestratorService {
         break;
       case SCENES.PAYMENT:
         await this.paymentScene.handle(ctx);
+        break;
+      case SCENES.PROFILE:
+        await this.profileScene.handle(ctx);
         break;
       case SCENES.SUPPORT:
         await this.supportScene.handle(ctx);
