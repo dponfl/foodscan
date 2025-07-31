@@ -38,7 +38,7 @@ export class PaymentProvider {
           paymentDataOneTime.products,
         );
         break;
-      case PAYMENT_OPTIONS.THREE_TIMES:
+      case PAYMENT_OPTIONS.TEN_TIMES:
         this.logger.log(
           `Generating three-times payment invoice for clientId: ${ctx.from?.id}`,
         );

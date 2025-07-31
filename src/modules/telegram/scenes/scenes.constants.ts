@@ -24,7 +24,6 @@ export enum CALLBACK_DATA {
 
 export enum WAITING_FOR_INPUT {
   PRODUCT_PHOTO = 'product_photo',
-  SUPPORT = 'support',
 }
 
 export enum TIMEOUTS {
@@ -34,7 +33,7 @@ export enum TIMEOUTS {
 
 export enum PAYMENT_OPTIONS {
   ONE_TIME = 'one_time',
-  THREE_TIMES = 'three_times',
+  TEN_TIMES = 'ten_times',
   MONTH = 'month',
   YEAR = 'year',
 }

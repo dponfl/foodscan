@@ -19,4 +19,11 @@ export class User {
 
   @Column({ default: 0 })
   balance: number;
+
+  /**
+   * TODO: Добавить поля:
+   *  - freeChecks: количество бесплатных проверок
+   *  - payedChecks: количество платных проверок
+   *  - subscriptionUntil: дата окончания подписки
+   */
 }
