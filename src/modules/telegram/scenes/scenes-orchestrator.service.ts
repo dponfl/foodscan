@@ -84,6 +84,18 @@ export class ScenesOrchestratorService {
       await this.paymentScene.handle(ctx);
     });
 
+    this.bot.command('profile', async (ctx) => {
+      this.logger.log(`Processing /profile command for user ${ctx?.from?.id}`);
+      ctx.session.currentScene = SCENES.SUPPORT;
+      await this.profileScene.handle(ctx);
+    });
+
+    this.bot.command('help', async (ctx) => {
+      this.logger.log(`Processing /help command for user ${ctx?.from?.id}`);
+      ctx.session.currentScene = SCENES.SUPPORT;
+      await this.supportScene.handle(ctx);
+    });
+
     // Обработка процесса платежа, произведенного в Telegram Stars
 
     this.bot.on('pre_checkout_query', async (ctx) => {
@@ -104,6 +116,8 @@ export class ScenesOrchestratorService {
           await this.goToScene(ctx, SCENES.MAIN_MENU);
           break;
         case CALLBACK_DATA.GO_TO_CHECK_PRODUCT:
+          // TODO: Добавить проверку наличия бесплатных проверок или подписки. При необходимости - сообщение пользователю и перевод в сцену Tariffs
+
           await this.goToScene(ctx, SCENES.CHECK_PRODUCT);
           break;
         case CALLBACK_DATA.GO_TO_TARIFFS:
@@ -121,7 +135,7 @@ export class ScenesOrchestratorService {
         case CALLBACK_DATA.GO_TO_PAYMENT_OPTION_TWO:
           await this.paymentProvider.generatePaymentInvoce(
             ctx,
-            PAYMENT_OPTIONS.THREE_TIMES,
+            PAYMENT_OPTIONS.TEN_TIMES,
           );
           break;
         case CALLBACK_DATA.GO_TO_PAYMENT_OPTION_THREE:

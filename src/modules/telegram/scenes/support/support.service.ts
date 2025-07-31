@@ -8,22 +8,33 @@ export class SupportSceneService implements IScene {
   readonly SCENE_NAME = SCENES.SUPPORT;
 
   async handle(ctx: MyContext): Promise<void> {
-    const message =
-      'Пожалуйста, опишите ваш вопрос или проблему одним сообщением. Я передам его в службу поддержки.';
-    const keyboard = new InlineKeyboard().text(
-      '⬅️ Назад',
-      CALLBACK_DATA.GO_TO_MAIN_MENU,
-    );
+    ctx.session.waitingForInput = null;
+    ctx.session.sceneEntryTime = Date.now();
+    ctx.session.currentScene = this.SCENE_NAME;
 
-    // Устанавливаем состояние "ожидания"
-    ctx.session.waitingForInput = WAITING_FOR_INPUT.SUPPORT;
-    ctx.session.sceneEntryTime = Date.now(); // Засекаем время
+    const text = `Команды, которые помогут тебе:
+1\\. /check — начать проверку продукта  
+2\\. /profile — посмотреть свой статус  
+3\\. /pricing — тарифы и подписки  
+4\\. /buy — оформить подписку
+
+❓ Если что\\-то пошло не так — напиши в поддержку:  
+@support\\_e\\-scanner\\_bot
+`;
+
+    const keyboard = new InlineKeyboard()
+      .text('🔍Проверить продукт', CALLBACK_DATA.GO_TO_CHECK_PRODUCT)
+      .row()
+      .text('🔙 Назад', CALLBACK_DATA.GO_TO_MAIN_MENU);
 
     if (ctx.callbackQuery) {
-      await ctx.editMessageText(message, { reply_markup: keyboard });
       await ctx.answerCallbackQuery();
-    } else {
-      await ctx.reply(message, { reply_markup: keyboard });
+      await ctx.deleteMessage();
     }
+
+    await ctx.reply(text, {
+      parse_mode: 'MarkdownV2',
+      reply_markup: keyboard,
+    });
   }
 }
