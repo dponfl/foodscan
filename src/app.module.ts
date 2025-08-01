@@ -7,15 +7,19 @@ import { DatabaseModule } from './modules/database/database.module';
 import { RedisModule } from './modules/redis/index';
 import { HealthModule } from './modules/health/index';
 import { UsersModule } from './modules/users/index';
+import { OpenAiModule } from './modules/openai/openai.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     UsersModule,
     RedisModule,
     TelegramModule,
     HealthModule,
+    OpenAiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

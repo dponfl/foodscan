@@ -4,102 +4,80 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Bot } from 'grammy';
-import { throwIfEmpty } from 'rxjs';
-import { ITelegramStarsPaymentPayload } from 'src/types';
+import { MyContext } from '../../types';
+import { ScenesOrchestratorService } from './scenes/scenes-orchestrator.service';
+import { BotConfigService } from './bot-config/bot-config.service';
+
 @Injectable()
 export class TelegramService implements OnModuleInit, OnModuleDestroy {
-  private bot: Bot;
+  private bot: Bot<MyContext>;
 
   private readonly logger = new Logger(TelegramService.name, {
     timestamp: true,
   });
 
-  private paymentData: ITelegramStarsPaymentPayload = {
-    title: 'Product title',
-    description: 'Product description',
-    payload: '{}',
-    currency: 'XXX',
-    products: [],
-  };
+  constructor(
+    private readonly botConfigService: BotConfigService,
+    // Оркестратор внедряется, чтобы NestJS его создал и запустил
+    private readonly scenesOrchestratorService: ScenesOrchestratorService,
+  ) {
+    this.bot = botConfigService.getBot();
+  }
 
-  constructor(private readonly configService: ConfigService) {
-    const tgToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
-    if (!tgToken) {
-      throw new Error(
-        'TELEGRAM_BOT_TOKEN is not defined in environment variables!',
+  private registerErrorHandler() {
+    this.bot.catch((err) => {
+      const ctx = err.ctx;
+      const error = err.error;
+
+      this.logger.error(
+        `Error while handling update ${ctx.update.update_id}:`,
+        error,
       );
-    }
-    this.bot = new Bot(tgToken);
 
-    this.setPaymentData({
-      title: 'Test Product',
-      description: 'Test description',
-      payload: '{}',
-      currency: 'XTR',
-      products: [{ amount: 1, label: 'Test Product' }],
+      // Отправляем пользователю сообщение о том, что что-то пошло не так
+      // Это необязательно, но является хорошей практикой
+      const errorMessage =
+        'Произошла непредвиденная ошибка. Мы уже работаем над её устранением. Пожалуйста, попробуйте позже.';
+
+      // Проверяем, можем ли мы ответить в этом контексте
+      if (ctx.chat?.id) {
+        ctx.api.sendMessage(ctx.chat.id, errorMessage).catch((e) => {
+          this.logger.error('Failed to send error message to user:', e);
+        });
+      }
     });
+  }
+
+  private async setCommands(): Promise<void> {
+    // Устанавливаем пользовательские команды
+
+    await this.bot.api.setMyCommands([
+      { command: 'start', description: 'Запустить бот' },
+      { command: 'check', description: 'Анализ нового продукта' },
+      { command: 'pricing', description: 'Тарифы и условия подписки' },
+      { command: 'buy', description: 'Оплата сервиса' },
+      { command: 'profile', description: 'Статистика' },
+      { command: 'help', description: 'Справка по боту и инструкции' },
+    ]);
   }
 
   async onModuleInit() {
     this.logger.log('Starting Telegram bot...');
-    this.registerCommonHandlers();
-    this.registerPaymentHandlers();
-    this.registerTextHandler();
+    this.registerErrorHandler();
 
-    try {
-      this.logger.log('Attempting to start bot polling...');
-      // Запускаем бота в режиме polling.
-      this.bot.start();
-      this.logger.log('Bot polling process has been initiated.');
-    } catch (error) {
-      this.logger.error('Failed to start Telegram bot polling!', error);
-    }
+    this.logger.log('Setting up commands...');
+    await this.setCommands();
+
+    this.logger.log('Attempting to start bot polling...');
+    // Запускаем бота в режиме polling.
+    this.bot.start();
+    this.logger.log('Bot polling process has been initiated.');
   }
 
   async onModuleDestroy() {
     this.logger.log('Stopping Telegram bot...');
     this.bot.stop();
     this.logger.log('Telegram bot stopped successfully!');
-  }
-
-  private registerCommonHandlers() {
-    this.bot.command('start', async (ctx) => {
-      this.logger.debug(`User ${ctx.from?.id} started the bot`);
-      // ctx.react('🤩');
-      return ctx.reply('Добро пожаловать. Бот запущен и работает!');
-    });
-  }
-
-  private registerPaymentHandlers() {
-    this.bot.command('pay', async (ctx) => {
-      this.logger.debug(`User ${ctx.from?.id} requested payment`);
-      return ctx.replyWithInvoice(
-        this.paymentData.title,
-        this.paymentData.description,
-        this.paymentData.payload,
-        this.paymentData.currency,
-        this.paymentData.products,
-      );
-    });
-
-    this.bot.on('pre_checkout_query', (ctx) => {
-      return ctx.answerPreCheckoutQuery(true).catch(() => {
-        console.error('answerPreCheckoutQuery failed');
-      });
-    });
-  }
-
-  private registerTextHandler() {
-    this.bot.on('message:text', async (ctx) => {
-      this.logger.debug(`User ${ctx.from?.id} sent a message`);
-      // ctx.react('👍');
-      return ctx.reply(`Ты написал: "${ctx.message.text}"`);
-    });
-  }
-
-  public setPaymentData(data: ITelegramStarsPaymentPayload) {
-    this.paymentData = data;
   }
 }

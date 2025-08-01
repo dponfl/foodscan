@@ -6,11 +6,24 @@ export class User {
   id: string;
 
   @Column({ unique: true })
-  telegramId: number;
+  clientId: number;
 
   @Column({ nullable: true })
-  username?: string;
+  userName: string;
+
+  @Column({ nullable: true })
+  userNick?: string;
+
+  @Column({ default: 'ru' })
+  lang: string;
 
   @Column({ default: 0 })
   balance: number;
+
+  /**
+   * TODO: Добавить поля:
+   *  - freeChecks: количество бесплатных проверок
+   *  - payedChecks: количество платных проверок
+   *  - subscriptionUntil: дата окончания подписки
+   */
 }
