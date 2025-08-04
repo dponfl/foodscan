@@ -1,7 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { OpenAiClientFactory } from './openai-client.factory';
+import { OpenAiClient } from '../../types';
 
 @Injectable()
 export class OpenAiService {
+  private readonly logger = new Logger(OpenAiService.name);
+
+  constructor(private readonly clientFactory: OpenAiClientFactory) {}
+
+  async textCompletion(prompt: string): Promise<any> {
+    const client = this.clientFactory.getClient(OpenAiClient.DEFAULT);
+    const response = await client.responses.create({
+      model: 'gpt-4o',
+      instructions: 'Ты — помощник по программированию, говорящий как пират.',
+      input: prompt,
+    });
+    return { status: 'Success', payload: response.output_text };
+  }
+
   /**
    * Имитирует анализ состава продукта.
    * В будущем здесь будет реальный запрос к OpenAI API.

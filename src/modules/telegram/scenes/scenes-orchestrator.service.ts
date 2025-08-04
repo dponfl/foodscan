@@ -258,8 +258,12 @@ export class ScenesOrchestratorService {
       { parse_mode: 'MarkdownV2' },
     );
 
-    const analysisResult = await this.openAiService.analyzeProductComposition(
+    const analysisResult1 = await this.openAiService.analyzeProductComposition(
       ctx?.message?.photo,
+    );
+
+    const analysisResult = await this.openAiService.textCompletion(
+      'Являются ли точки с запятой необязательными в JavaScript?',
     );
 
     if (analysisResult.status === 'Success' && analysisResult.payload) {
