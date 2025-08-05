@@ -244,27 +244,31 @@ export class ScenesOrchestratorService {
 
   private async handleProductPhoto(ctx: MyContext, photo: any) {
     this.logger.log(
-      `Received photo from ${ctx?.from?.id}, photo[0].file_id: ${photo[0].file_id}`,
+      `Received photo from ${ctx?.from?.id}, photo[0].file_id: ${photo[0].file_id}\n\nphoto: ${JSON.stringify(
+        photo,
+      )}`,
     );
 
     ctx.session.photo = photo;
 
     // Логика обработки фотографии
 
-    await ctx.replyWithChatAction('typing');
-
     await ctx.reply(
       `Отлично\\! Я анализирую состав продукта, это может занять некоторое время…`,
       { parse_mode: 'MarkdownV2' },
     );
 
-    const analysisResult1 = await this.openAiService.analyzeProductComposition(
-      ctx?.message?.photo,
-    );
+    await ctx.replyWithChatAction('typing');
 
-    const analysisResult = await this.openAiService.textCompletion(
-      'Являются ли точки с запятой необязательными в JavaScript?',
-    );
+    // const analysisResult1 = await this.openAiService.analyzeProductComposition(
+    //   ctx?.message?.photo,
+    // );
+
+    // const analysisResult = await this.openAiService.textCompletion(
+    //   'Являются ли точки с запятой необязательными в JavaScript?',
+    // );
+
+    const analysisResult = await this.openAiService.handlePhoto(photo);
 
     if (analysisResult.status === 'Success' && analysisResult.payload) {
       // TODO: Уменьшить в БД кол-во доступных проверок

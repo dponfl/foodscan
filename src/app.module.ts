@@ -9,6 +9,7 @@ import { HealthModule } from './modules/health/index';
 import { UsersModule } from './modules/users/index';
 import { OpenAiModule } from './modules/openai/openai.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CommonModule } from './helpers/common/common.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     TelegramModule,
     HealthModule,
     OpenAiModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,21 +1,62 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiClientFactory } from './openai-client.factory';
-import { OpenAiClient } from '../../types';
+import { ITelegramPhotoSize, OpenAiClient } from '../../types';
+import { CommonService } from '../../helpers';
 
 @Injectable()
 export class OpenAiService {
   private readonly logger = new Logger(OpenAiService.name);
 
-  constructor(private readonly clientFactory: OpenAiClientFactory) {}
+  constructor(
+    private readonly clientFactory: OpenAiClientFactory,
+    private readonly commonService: CommonService,
+  ) {}
 
   async textCompletion(prompt: string): Promise<any> {
     const client = this.clientFactory.getClient(OpenAiClient.DEFAULT);
     const response = await client.responses.create({
-      model: 'gpt-4o',
-      instructions: 'Ты — помощник по программированию, говорящий как пират.',
+      model: 'gpt-4-0125-preview',
+      instructions: 'Отвечай языком высокообразованного человека',
       input: prompt,
     });
     return { status: 'Success', payload: response.output_text };
+  }
+
+  async handlePhoto(photoArray: ITelegramPhotoSize[]): Promise<any> {
+    try {
+      const base64Url =
+        await this.commonService.getBase64UrlFromTelegramPhoto(photoArray);
+
+      const client = this.clientFactory.getClient(OpenAiClient.DEFAULT);
+
+      const response = await client.chat.completions.create({
+        // model: 'gpt-4.1-mini',
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Что на этом изображении?' },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: base64Url,
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      const analysisResult = response.choices[0].message.content;
+
+      this.logger.log(`Photo analysis result: ${analysisResult}`);
+
+      return { status: 'Success', payload: analysisResult };
+    } catch (error) {
+      this.logger.error(`Error during photo analysis: ${error.message}`);
+      return { status: 'Error', payload: error.message };
+    }
   }
 
   /**
