@@ -178,7 +178,7 @@ export class OpenAiService {
         temperature: 0.2, // Низкая температура для более предсказуемого результата
       });
 
-      console.log(`response: ${JSON.stringify(response)}`);
+      // console.log(`response: ${JSON.stringify(response)}`);
 
       const analysis: FullCompositionAnalysis =
         response.output_parsed as FullCompositionAnalysis;
@@ -196,12 +196,12 @@ export class OpenAiService {
       let fullMsg = `🔎 Разбор состава:\n\n`;
 
       for (const step of analysis.compositionAnalysisDetails) {
-        fullMsg += `${step.explanation}\n`;
+        fullMsg += `${step.explanation}\n\n`;
       }
 
       fullMsg += `\n👉 ${analysis.compositionAnalysisResult}`;
 
-      fullMsg += `\n❤️ Заботься о себе — ты то, что ты ешь\\!`;
+      fullMsg += `\n\n❤️ Заботься о себе — ты то, что ты ешь!`;
 
       this.logger.log(`Full message: ${fullMsg}`);
 

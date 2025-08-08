@@ -268,6 +268,11 @@ export class ScenesOrchestratorService {
         for (const msg of analysisResult.payload.messageChunks) {
           await ctx.reply(msg);
         }
+
+        // Очищаем состояние ожидания и возвращаем в главное меню
+        ctx.session.waitingForInput = null;
+        ctx.session.sceneEntryTime = null;
+        await this.mainMenuScene.handle(ctx);
       } else {
         this.logger.error(
           `Error - analysisResult.payload.messageChunks is not an array: ${JSON.stringify(analysisResult.payload.messageChunks)}`,
@@ -276,7 +281,7 @@ export class ScenesOrchestratorService {
           'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
         );
 
-        // ВРЕМЕННО: Очищаем состояние ожидания и возвращаем в главное меню
+        // Очищаем состояние ожидания и возвращаем в главное меню
         ctx.session.waitingForInput = null;
         ctx.session.sceneEntryTime = null;
         await this.mainMenuScene.handle(ctx);
@@ -301,7 +306,7 @@ export class ScenesOrchestratorService {
           'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
         );
 
-        // ВРЕМЕННО: Очищаем состояние ожидания и возвращаем в главное меню
+        // Очищаем состояние ожидания и возвращаем в главное меню
         ctx.session.waitingForInput = null;
         ctx.session.sceneEntryTime = null;
         await this.mainMenuScene.handle(ctx);

@@ -10,7 +10,7 @@ export const photoContextSchema = z.object({
   contextExplanation: z
     .string()
     .describe(
-      'Краткое объяснение на 1-2 предложения, что на фото, если isContextCorrect=false. Например: "На фото изображен пейзаж", "На фото чек из магазина". Формат MarkdownV2 в нотации Telegram.',
+      'Краткое объяснение на 1-2 предложения, что на фото, если isContextCorrect=false. Например: "На фото изображен пейзаж", "На фото чек из магазина".',
     ),
 });
 
@@ -19,7 +19,7 @@ export const compositionAnalysisChunkSchema = z.object({
   explanation: z
     .string()
     .describe(
-      'Анализ одного ингредиента или группы. Например: "❗️E621 — усилитель вкуса (глутамат натрия)\\n— Может вызывать: головные боли, привыкание\\n— Не рекомендуется при: мигренях, гипертонии". Формат MarkdownV2 в нотации Telegram.',
+      'Анализ одного ингредиента или группы. Например: "❗️E621 — усилитель вкуса (глутамат натрия)\\n— Может вызывать: головные боли, привыкание\\n— Не рекомендуется при: мигренях, гипертонии".',
     ),
 });
 
@@ -36,7 +36,7 @@ export const fullCompositionAnalysisSchema = z.object({
   compositionAnalysisResult: z
     .string()
     .describe(
-      'Полный, готовый для отправки в Telegram отчет в формате MarkdownV2 в нотации Telegram, включающий общие рекомендации и вывод нутрициолога. Если photoCheck.isContextCorrect=false, это поле должно быть пустой строкой.',
+      'Полный, готовый для отправки в Telegram отчет, включающий общие рекомендации и вывод нутрициолога. Если photoCheck.isContextCorrect=false, это поле должно быть пустой строкой.',
     ),
 });
 
