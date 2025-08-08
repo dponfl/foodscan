@@ -14,4 +14,9 @@ export class AppController {
   chat() {
     return this.appService.chat();
   }
+
+  @Get('so')
+  structedOutputs() {
+    return this.appService.structuredOutputs();
+  }
 }

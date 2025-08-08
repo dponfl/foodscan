@@ -12,4 +12,11 @@ export class AppService {
     const res = this.openAiService.textCompletion('Расскажи про Италию');
     return res;
   }
+
+  structuredOutputs() {
+    const res = this.openAiService.handleStructuredOutputsForText(
+      'Реши уравнение 8x + 31 = 2',
+    );
+    return res;
+  }
 }
