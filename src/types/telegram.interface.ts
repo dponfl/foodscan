@@ -31,3 +31,12 @@ export interface IScene {
 }
 
 export type MyContext = Context & SessionFlavor<ISessionData>;
+
+// Тип для элемента в массиве photo от Telegram
+export interface ITelegramPhotoSize {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  file_size?: number;
+}

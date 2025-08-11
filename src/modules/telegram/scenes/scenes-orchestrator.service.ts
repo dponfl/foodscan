@@ -27,6 +27,11 @@ export class ScenesOrchestratorService {
   private readonly logger = new Logger(ScenesOrchestratorService.name);
   private redisClient;
 
+  private readonly backKeyboard = new InlineKeyboard().text(
+    '🔙 Назад',
+    CALLBACK_DATA.GO_TO_MAIN_MENU,
+  );
+
   constructor(
     private readonly botConfigService: BotConfigService,
     private readonly redisService: RedisService,
@@ -164,11 +169,6 @@ export class ScenesOrchestratorService {
       }
     });
 
-    const backKeyboard = new InlineKeyboard().text(
-      '🔙 Назад',
-      CALLBACK_DATA.GO_TO_MAIN_MENU,
-    );
-
     /**
      * Обработка сообщений
      */
@@ -227,7 +227,7 @@ export class ScenesOrchestratorService {
             `❗ Кажется, это не фото упаковки\\. Чтобы я смог провести анализ, мне нужен состава продукта \\(фото списка ингредиентов и т\\.д\\.\\)\\.
 🔁 Пожалуйста, отправь мне фото состава — и я сразу начну проверку\\!
 `,
-            { reply_markup: backKeyboard, parse_mode: 'MarkdownV2' },
+            { reply_markup: this.backKeyboard, parse_mode: 'MarkdownV2' },
           );
           break;
         }
@@ -244,42 +244,74 @@ export class ScenesOrchestratorService {
 
   private async handleProductPhoto(ctx: MyContext, photo: any) {
     this.logger.log(
-      `Received photo from ${ctx?.from?.id}, photo[0].file_id: ${photo[0].file_id}`,
+      `Received photo from ${ctx?.from?.id}, photo[0].file_id: ${photo[0].file_id}\n\nphoto: ${JSON.stringify(
+        photo,
+      )}`,
     );
 
     ctx.session.photo = photo;
 
     // Логика обработки фотографии
 
+    await ctx.reply(
+      `Отлично! Я анализирую состав продукта, это может занять некоторое время…`,
+    );
+
     await ctx.replyWithChatAction('typing');
 
-    await ctx.reply(
-      `Отлично\\! Я анализирую состав продукта, это может занять некоторое время…`,
-      { parse_mode: 'MarkdownV2' },
-    );
-
-    const analysisResult = await this.openAiService.analyzeProductComposition(
-      ctx?.message?.photo,
-    );
+    const analysisResult = await this.openAiService.analyzeProductImage(photo);
 
     if (analysisResult.status === 'Success' && analysisResult.payload) {
-      // TODO: Уменьшить в БД кол-во доступных проверок
+      if (Array.isArray(analysisResult.payload.messageChunks)) {
+        // TODO: Уменьшить в БД кол-во доступных проверок
 
-      const successMessage =
-        '🔎 Разбор состава:\n' +
-        `${analysisResult.payload}\n\n` +
-        '❤️ Заботься о себе — ты то, что ты ешь!';
-      await ctx.reply(successMessage, { parse_mode: 'Markdown' });
-    } else {
-      await ctx.reply(
-        'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
-      );
+        for (const msg of analysisResult.payload.messageChunks) {
+          await ctx.reply(msg);
+        }
+
+        // Очищаем состояние ожидания и возвращаем в главное меню
+        ctx.session.waitingForInput = null;
+        ctx.session.sceneEntryTime = null;
+        await this.mainMenuScene.handle(ctx);
+      } else {
+        this.logger.error(
+          `Error - analysisResult.payload.messageChunks is not an array: ${JSON.stringify(analysisResult.payload.messageChunks)}`,
+        );
+        await ctx.reply(
+          'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
+        );
+
+        // Очищаем состояние ожидания и возвращаем в главное меню
+        ctx.session.waitingForInput = null;
+        ctx.session.sceneEntryTime = null;
+        await this.mainMenuScene.handle(ctx);
+      }
+    } else if (analysisResult.status === 'Failed') {
+      // Это кейс, когда была отправлена фотография, но она не соответствовала требованиям и на ней нет состава продукта
+      if (
+        !analysisResult.payload.isContextCorrect &&
+        analysisResult.payload.contextExplanation
+      ) {
+        // TODO: Уменьшить в БД кол-во доступных проверок
+
+        await ctx.reply(
+          `Ты прислал фото, на котором отсутствует состав продукта:\n❗️ ${analysisResult.payload.contextExplanation}\n\nПожалуйста, отправь мне фото состава продукта, чтобы я смог провести анализ!`,
+          { reply_markup: this.backKeyboard },
+        );
+      } else {
+        this.logger.error(
+          `analysisResult.payload.isContextCorrect and/or analysisResult.payload.contextExplanation are not correct: ${JSON.stringify(analysisResult.payload)}`,
+        );
+        await ctx.reply(
+          'Произошла ошибка при анализе. Пожалуйста, попробуйте позже.',
+        );
+
+        // Очищаем состояние ожидания и возвращаем в главное меню
+        ctx.session.waitingForInput = null;
+        ctx.session.sceneEntryTime = null;
+        await this.mainMenuScene.handle(ctx);
+      }
     }
-
-    // ВРЕМЕННО: Очищаем состояние ожидания и возвращаем в главное меню
-    ctx.session.waitingForInput = null;
-    ctx.session.sceneEntryTime = null;
-    await this.mainMenuScene.handle(ctx);
   }
 
   // Вспомогательный метод для смены сцен

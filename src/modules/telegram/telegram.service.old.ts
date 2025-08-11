@@ -26,8 +26,6 @@ import { ITelegramStarsPaymentPayload } from 'src/types';
 import { UsersService } from '../users';
 import { OpenAiService } from '../openai';
 import * as path from 'path';
-import { CommonHelpers } from '../../helpers/common';
-// import { TELEGRAM_BOT_MESSAGES } from './telegram.constants';
 
 // Определяем кастомный контекст с поддержкой сессий и конверсаций
 interface SessionData {
