@@ -1,0 +1,51 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    container_name: foodscan_app
+    env_file:
+      - .env
+    ports:
+      - '${PORT}:${PORT}'
+    depends_on:
+      - redis
+      - mariadb
+    networks:
+      - foodscan_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: foodscan_redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT}:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - foodscan_network
+
+  mariadb:
+    image: mariadb:10.6 # Используем официальный образ MariaDB
+    container_name: foodscan_mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # Пароль для root
+      MYSQL_DATABASE: ${DB_DATABASE} # Имя создаваемой БД
+      MYSQL_USER: ${DB_USERNAME} # Имя создаваемого пользователя
+      MYSQL_PASSWORD: ${DB_PASSWORD} # Пароль для этого пользователя
+    ports:
+      - '${DB_PORT}:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql # Сохраняем данные БД между перезапусками
+    networks:
+      - foodscan_network
+
+networks:
+  foodscan_network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  mariadb_data:
