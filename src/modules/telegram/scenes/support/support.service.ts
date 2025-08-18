@@ -13,13 +13,13 @@ export class SupportSceneService implements IScene {
     ctx.session.currentScene = this.SCENE_NAME;
 
     const text = `Команды, которые помогут тебе:
-1\\. /check — начать проверку продукта  
-2\\. /profile — посмотреть свой статус  
-3\\. /pricing — тарифы и подписки  
-4\\. /buy — оформить подписку
+1. /check — начать проверку продукта  
+2. /profile — посмотреть свой статус  
+3. /pricing — тарифы и подписки  
+4. /buy — оформить подписку
 
-❓ Если что\\-то пошло не так — напиши в поддержку:  
-@support\\_e\\-scanner\\_bot
+❓ Если что-то пошло не так — напиши в поддержку:  
+@support_e-scanner_bot
 `;
 
     const keyboard = new InlineKeyboard()
@@ -33,7 +33,7 @@ export class SupportSceneService implements IScene {
     }
 
     await ctx.reply(text, {
-      parse_mode: 'MarkdownV2',
+      parse_mode: 'HTML',
       reply_markup: keyboard,
     });
   }
