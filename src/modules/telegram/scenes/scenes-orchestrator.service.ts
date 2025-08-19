@@ -269,7 +269,7 @@ export class ScenesOrchestratorService {
         // TODO: Уменьшить в БД кол-во доступных проверок
 
         for (const msg of analysisResult.payload.messageChunks) {
-          await ctx.reply(msg);
+          await ctx.reply(msg, { parse_mode: 'HTML' });
         }
 
         // Очищаем состояние ожидания и возвращаем в главное меню
