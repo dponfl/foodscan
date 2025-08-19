@@ -17,8 +17,7 @@ export class ProfileSceneService implements IScene {
     const text = `Твой профиль:
 • Осталось бесплатных проверок: 0  
 • Купленных проверок: 3  
-• Подписка: активна до 12\\.05\\.2025  
-• Статус: обычный пользователь`;
+• Подписка: активна до 12.05.2025`;
 
     const keyboard = new InlineKeyboard()
       .text('✅ Продлить подписку', CALLBACK_DATA.GO_TO_PAYMENT)
@@ -31,7 +30,7 @@ export class ProfileSceneService implements IScene {
     }
 
     await ctx.reply(text, {
-      parse_mode: 'MarkdownV2',
+      parse_mode: 'HTML',
       reply_markup: keyboard,
     });
   }
