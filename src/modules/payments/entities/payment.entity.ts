@@ -16,23 +16,23 @@ export class Payment {
   id: string;
 
   @ManyToOne(() => User, (user) => user.payments)
-  @JoinColumn({ name: 'client_id' }) // Имя колонки в БД для внешнего ключа
+  @JoinColumn({ name: 'client_id' })
   client: User;
 
   @Column({ type: 'varchar' })
   subsCategory: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 }) // Для дробных чисел, идеально для денег
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column({ type: 'varchar', length: 3 }) // Ограничение в 3 символа (напр., 'USD')
+  @Column({ type: 'varchar', length: 3 })
   currency: string;
 
   @Column({ type: 'varchar' })
   status: string;
 
-  @Column({ type: 'text' }) // 'text' подходит для длинных описаний
-  paymentDescription: string;
+  @Column({ type: 'text' })
+  data: string;
 
   @CreateDateColumn()
   createdAt: Date;
