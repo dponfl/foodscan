@@ -20,6 +20,7 @@ import { TariffsSceneService } from './tariffs/tariffs.service';
 import { PaymentSceneService } from './payment/payment.service';
 import { PaymentProvider } from './payment/payment';
 import { ProfileSceneService } from './profile/profile.service';
+import { PaymentsService } from '../../payments';
 
 @Injectable()
 export class ScenesOrchestratorService {
@@ -44,6 +45,7 @@ export class ScenesOrchestratorService {
     private readonly profileScene: ProfileSceneService,
     private readonly supportScene: SupportSceneService,
     private readonly openAiService: OpenAiService,
+    private readonly paymentsService: PaymentsService,
   ) {
     this.redisClient = this.redisService.getRedisClient();
 
@@ -185,6 +187,11 @@ export class ScenesOrchestratorService {
           ctx.message.successful_payment,
         )}`,
       );
+
+      await this.paymentsService.createPaidRecord({
+        clientId: ctx.from.id,
+        successfulPayment: ctx.message.successful_payment,
+      });
 
       await ctx.reply(
         '⭐ Оплата <b>прошла успешно</b> — благодарим за покупку\\!',

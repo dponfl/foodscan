@@ -51,11 +51,11 @@ export class PaymentProvider {
           paymentDataOneTime.products,
         );
 
-        // await this.paymentsService.createInvoiceRecord({
-        //   clientId,
-        //   subsCategory: PAYMENT_SUBSCRIPTION_CATEGORY.ONE_TIME,
-        //   invoice: oneTimeInvoice.invoice,
-        // });
+        await this.paymentsService.createInvoiceRecord({
+          clientId,
+          subsCategory: PAYMENT_SUBSCRIPTION_CATEGORY.ONE_TIME,
+          invoice: oneTimeInvoice.invoice,
+        });
 
         break;
       case PAYMENT_OPTIONS.TEN_TIMES:

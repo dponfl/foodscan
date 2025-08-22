@@ -10,6 +10,7 @@ import { OpenAiModule } from '../../../modules/openai';
 import { TariffsModule } from './tariffs/tariffs.module';
 import { PaymentModule } from './payment/payment.module';
 import { ProfileModule } from './profile/profile.module';
+import { PaymentsModule, PaymentsService } from 'src/modules/payments';
 
 @Module({
   imports: [
@@ -24,8 +25,9 @@ import { ProfileModule } from './profile/profile.module';
     TariffsModule,
     PaymentModule,
     ProfileModule,
+    PaymentsModule,
   ],
-  providers: [ScenesOrchestratorService],
+  providers: [ScenesOrchestratorService, PaymentsService],
   exports: [ScenesOrchestratorService],
 })
 export class ScenesOrchestratorModule {}
