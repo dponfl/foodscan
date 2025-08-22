@@ -3,7 +3,7 @@ import { Payment } from './entities/payment.entity';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreatePaymentDto, UpdatePaymentDto } from './dto';
+import { CreateInvoiceDto, CreatePaidDto } from './dto';
 import { User } from 'src/modules/users/entities/user.entity';
 import { PAYMENT_STATUS } from '../../types';
 
@@ -20,13 +20,26 @@ export class PaymentsService extends TypeOrmCrudService<Payment> {
     super(paymentRepository);
   }
 
-  async createInvoice(dto: CreatePaymentDto): Promise<Payment> {
-    this.logger.log(
-      `Creating invoice record for clientId: ${dto.user.clientId} userId: ${dto.user.id}`,
-    );
+  /**
+   * Создаёт запись со статусом INVOICE.
+   */
+  async createInvoiceRecord(dto: CreateInvoiceDto): Promise<Payment> {
+    this.logger.log(`Creating INVOICE record for clientId: ${dto.clientId}`);
 
+    // 1. Находим пользователя по Telegram ID
+    const user = await this.userRepository.findOneBy({
+      clientId: dto.clientId,
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with clientId ${dto.clientId} not found.`,
+      );
+    }
+
+    // 2. Создаём запись
     const newPayment = this.paymentRepository.create({
-      client: dto.user,
+      client: user,
       subsCategory: dto.subsCategory,
       amount: dto.invoice.total_amount,
       currency: dto.invoice.currency,
@@ -37,21 +50,36 @@ export class PaymentsService extends TypeOrmCrudService<Payment> {
     return this.paymentRepository.save(newPayment);
   }
 
-  async updateStatusOnSuccess(dto: UpdatePaymentDto): Promise<Payment> {
-    const { successfulPayment } = dto;
-    const paymentId = successfulPayment.invoice_payload;
+  /**
+   * Создаёт запись со статусом PAID.
+   */
+  async createPaidRecord(dto: CreatePaidDto): Promise<Payment> {
+    this.logger.log(`Creating PAID record for clientId: ${dto.clientId}`);
 
-    this.logger.log(`Updating payment record ${paymentId} to PAID`);
+    // 1. Находим пользователя по Telegram ID
+    const user = await this.userRepository.findOneBy({
+      clientId: dto.clientId,
+    });
 
-    const payment = await this.paymentRepository.findOneBy({ id: paymentId });
-
-    if (!payment) {
-      throw new NotFoundException(`Payment with ID ${paymentId} not found.`);
+    if (!user) {
+      throw new NotFoundException(
+        `User with clientId ${dto.clientId} not found.`,
+      );
     }
 
-    payment.status = PAYMENT_STATUS.PAID;
-    payment.data = JSON.stringify(successfulPayment);
+    // 2. Извлекаем категорию из payload'а
+    const { subsCategory } = JSON.parse(dto.successfulPayment.invoice_payload);
 
-    return this.paymentRepository.save(payment);
+    // 3. Создаём запись
+    const newPayment = this.paymentRepository.create({
+      client: user,
+      subsCategory,
+      amount: dto.successfulPayment.total_amount,
+      currency: dto.successfulPayment.currency,
+      status: PAYMENT_STATUS.PAID,
+      data: JSON.stringify(dto.successfulPayment),
+    });
+
+    return this.paymentRepository.save(newPayment);
   }
 }

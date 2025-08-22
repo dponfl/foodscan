@@ -18,7 +18,6 @@ import { ProfileModule } from './profile/profile.module';
     StartSceneModule,
     MainMenuSceneModule,
     CheckProductSceneModule,
-    SupportModule,
     CheckProductSceneModule,
     SupportModule,
     OpenAiModule,
