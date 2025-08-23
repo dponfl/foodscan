@@ -1,11 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { format } from 'date-fns';
 import { IScene, MyContext } from '../../../../types';
 import { CALLBACK_DATA, SCENES } from '../scenes.constants';
 import { InlineKeyboard } from 'grammy';
+import { SubscriptionService } from '../../../subscription';
 
 @Injectable()
 export class ProfileSceneService implements IScene {
   private readonly logger = new Logger(ProfileSceneService.name);
+
+  constructor(private readonly subsriptionService: SubscriptionService) {}
 
   readonly SCENE_NAME = SCENES.PROFILE;
 
@@ -16,10 +20,23 @@ export class ProfileSceneService implements IScene {
 
     // TODO: Нужно вернуть результаты из базы
 
+    const clientId = ctx.from?.id;
+
+    if (!clientId) {
+      this.logger.error(`No clientId: ${clientId}`);
+      throw new ForbiddenException(`No clientId: ${clientId}`);
+    }
+
+    const subscriptionInfo = await this.subsriptionService.getStatus(clientId);
+
+    const subscriptionEndDate = subscriptionInfo.subscriptionUntil
+      ? `активна до ${format(subscriptionInfo.subscriptionUntil, 'dd.MM.yyyy')}`
+      : 'не активна';
+
     const text = `Твой профиль:
-• Осталось бесплатных проверок: 0  
-• Купленных проверок: 3  
-• Подписка: активна до 12.05.2025`;
+• Осталось бесплатных проверок: ${subscriptionInfo.freeChecks}  
+• Купленных проверок: ${subscriptionInfo.paidChecks}  
+• Подписка: ${subscriptionEndDate}`;
 
     const keyboard = new InlineKeyboard()
       .text('✅ Продлить подписку', CALLBACK_DATA.GO_TO_PAYMENT)

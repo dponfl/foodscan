@@ -77,6 +77,38 @@ export class ScenesOrchestratorService {
 
     this.bot.command('check', async (ctx) => {
       this.logger.log(`Processing /check command for user ${ctx?.from?.id}`);
+
+      this.logger.log(`Checking subscription for user ${ctx?.from?.id}`);
+
+      const clientId = ctx.from?.id;
+
+      if (!clientId) {
+        this.logger.error(`No clientId: ${clientId}`);
+        throw new ForbiddenException(`No clientId: ${clientId}`);
+      }
+
+      const allowedToCheckProduct =
+        await this.subscriptionService.isActive(clientId);
+
+      if (!allowedToCheckProduct) {
+        this.logger.warn(
+          `User with clientId: ${clientId} is not allowed to check product`,
+        );
+        await ctx.reply(
+          `У вас <b>закончились бесплатные проверки</b> и вы не можете больше проверять продукты. Пожалуйста, <b>подпишитесь на подписку</b>, чтобы продолжить.`,
+          { parse_mode: 'HTML' },
+        );
+
+        await ctx.replyWithChatAction('typing');
+
+        setTimeout(
+          async () => await this.goToScene(ctx, SCENES.TARIFFS),
+          TIMEOUTS.AFTER_START,
+        );
+
+        return;
+      }
+
       ctx.session.currentScene = SCENES.CHECK_PRODUCT;
       await this.checkProductScene.handle(ctx);
     });
@@ -143,7 +175,13 @@ export class ScenesOrchestratorService {
               `У вас <b>закончились бесплатные проверки</b> и вы не можете больше проверять продукты. Пожалуйста, <b>подпишитесь на подписку</b>, чтобы продолжить.`,
               { parse_mode: 'HTML' },
             );
-            await this.goToScene(ctx, SCENES.TARIFFS);
+
+            await ctx.replyWithChatAction('typing');
+
+            setTimeout(
+              async () => await this.goToScene(ctx, SCENES.TARIFFS),
+              TIMEOUTS.AFTER_START,
+            );
             return;
           }
 

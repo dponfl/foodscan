@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { User, UsersService } from '../users';
 import {
+  ISubscription,
   ITelegramSuccessfulPayment,
   PAYMENT_SUBSCRIPTION_CATEGORY,
 } from '../../types';
@@ -147,7 +148,29 @@ export class SubscriptionService {
     return this.usersService.save(user);
   }
 
+  /**
+   * Возвращает текущий статус подписки и количество проверок пользователя.
+   * @param clientId - Telegram ID пользователя.
+   * @returns {Promise<ISubscription>} - Объект со статусом подписки.
+   */
   async getStatus(clientId: number): Promise<ISubscription> {
     const user = await this.usersService.findByClientId(clientId);
+
+    if (!user) {
+      this.logger.warn(
+        `Subscription status requested for non-existent user with clientId: ${clientId}`,
+      );
+      throw new NotFoundException(
+        `Subscription status requested for non-existent user with clientId: ${clientId}`,
+      );
+    }
+
+    const { freeChecks, paidChecks, subscriptionUntil } = user;
+
+    return {
+      freeChecks,
+      paidChecks,
+      subscriptionUntil,
+    };
   }
 }
