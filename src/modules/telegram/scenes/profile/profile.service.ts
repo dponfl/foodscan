@@ -14,6 +14,8 @@ export class ProfileSceneService implements IScene {
     ctx.session.sceneEntryTime = Date.now();
     ctx.session.currentScene = this.SCENE_NAME;
 
+    // TODO: Нужно вернуть результаты из базы
+
     const text = `Твой профиль:
 • Осталось бесплатных проверок: 0  
 • Купленных проверок: 3  

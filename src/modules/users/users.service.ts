@@ -47,10 +47,36 @@ export class UsersService extends TypeOrmCrudService<User> {
       return await this.userRepository.save(newUser);
     } catch (error) {
       this.logger.error(
-        `Error in findOrCreate for clientId ${data.clientId}`,
+        `Error in findOrCreate for clientId: ${data.clientId}, error message: ${error.message}`,
         error.stack,
       );
       throw error;
     }
+  }
+
+  /**
+   * Находит пользователя по Telegram ID (clientId).
+   * @param clientId - Telegram ID пользователя.
+   * @returns {Promise<User | null>} - Найденный пользователь или null.
+   */
+  async findByClientId(clientId: number): Promise<User | null> {
+    try {
+      return await this.userRepository.findOneBy({ clientId });
+    } catch (error) {
+      this.logger.error(
+        `Error in findByClientId for clientId: ${clientId}, error message: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Сохраняет изменения в сущности пользователя.
+   * @param user - объект User для сохранения.
+   * @returns {Promise<User>} - обновлённый пользователь.
+   */
+  async save(user: User): Promise<User> {
+    return this.userRepository.save(user);
   }
 }

@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInvoiceDto, CreatePaidDto } from './dto';
 import { User } from 'src/modules/users/entities/user.entity';
-import { PAYMENT_STATUS } from '../../types';
+import { PAYMENT_STATUS, PAYMENT_SUBSCRIPTION_CATEGORY } from '../../types';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 
 @Injectable()
@@ -56,7 +56,6 @@ export class PaymentsService extends TypeOrmCrudService<Payment> {
   async createPaidRecord(dto: CreatePaidDto): Promise<Payment> {
     this.logger.log(`Creating PAID record for clientId: ${dto.clientId}`);
 
-    // 1. Находим пользователя по Telegram ID
     const client = await this.userRepository.findOneBy({
       clientId: dto.clientId,
     });
@@ -67,10 +66,9 @@ export class PaymentsService extends TypeOrmCrudService<Payment> {
       );
     }
 
-    // 2. Извлекаем категорию из payload'а
-    const { subsCategory } = JSON.parse(dto.successfulPayment.invoice_payload);
+    const subsCategory = dto.successfulPayment
+      .invoice_payload as PAYMENT_SUBSCRIPTION_CATEGORY;
 
-    // 3. Создаём запись
     const newPayment = this.paymentRepository.create({
       client,
       subsCategory,

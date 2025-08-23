@@ -11,6 +11,7 @@ import { OpenAiModule } from './modules/openai/openai.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CommonModule } from './helpers/common/common.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     HealthModule,
     OpenAiModule,
     CommonModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
