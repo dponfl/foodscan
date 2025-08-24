@@ -10,23 +10,28 @@ import { OpenAiModule } from '../../../modules/openai';
 import { TariffsModule } from './tariffs/tariffs.module';
 import { PaymentModule } from './payment/payment.module';
 import { ProfileModule } from './profile/profile.module';
+import { PaymentsModule, PaymentsService } from '../../payments';
+import { SubscriptionModule, SubscriptionService } from '../../subscription';
+import { UsersModule } from '../../users';
 
 @Module({
   imports: [
     BotConfigModule,
     RedisModule,
+    UsersModule,
     StartSceneModule,
     MainMenuSceneModule,
     CheckProductSceneModule,
-    SupportModule,
     CheckProductSceneModule,
     SupportModule,
     OpenAiModule,
     TariffsModule,
     PaymentModule,
     ProfileModule,
+    PaymentsModule,
+    SubscriptionModule,
   ],
-  providers: [ScenesOrchestratorService],
+  providers: [ScenesOrchestratorService, PaymentsService, SubscriptionService],
   exports: [ScenesOrchestratorService],
 })
 export class ScenesOrchestratorModule {}

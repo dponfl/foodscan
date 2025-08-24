@@ -10,6 +10,8 @@ import { UsersModule } from './modules/users/index';
 import { OpenAiModule } from './modules/openai/openai.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CommonModule } from './helpers/common/common.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 
 @Module({
   imports: [
@@ -17,11 +19,13 @@ import { CommonModule } from './helpers/common/common.module';
     ScheduleModule.forRoot(),
     DatabaseModule,
     UsersModule,
+    PaymentsModule,
     RedisModule,
     TelegramModule,
     HealthModule,
     OpenAiModule,
     CommonModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

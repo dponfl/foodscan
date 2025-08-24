@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisService } from '../../redis';
 import { Bot, InlineKeyboard } from 'grammy';
@@ -20,6 +20,8 @@ import { TariffsSceneService } from './tariffs/tariffs.service';
 import { PaymentSceneService } from './payment/payment.service';
 import { PaymentProvider } from './payment/payment';
 import { ProfileSceneService } from './profile/profile.service';
+import { PaymentsService } from '../../payments';
+import { SubscriptionService } from '../../subscription';
 
 @Injectable()
 export class ScenesOrchestratorService {
@@ -44,6 +46,8 @@ export class ScenesOrchestratorService {
     private readonly profileScene: ProfileSceneService,
     private readonly supportScene: SupportSceneService,
     private readonly openAiService: OpenAiService,
+    private readonly paymentsService: PaymentsService,
+    private readonly subscriptionService: SubscriptionService,
   ) {
     this.redisClient = this.redisService.getRedisClient();
 
@@ -73,6 +77,38 @@ export class ScenesOrchestratorService {
 
     this.bot.command('check', async (ctx) => {
       this.logger.log(`Processing /check command for user ${ctx?.from?.id}`);
+
+      this.logger.log(`Checking subscription for user ${ctx?.from?.id}`);
+
+      const clientId = ctx.from?.id;
+
+      if (!clientId) {
+        this.logger.error(`No clientId: ${clientId}`);
+        throw new ForbiddenException(`No clientId: ${clientId}`);
+      }
+
+      const allowedToCheckProduct =
+        await this.subscriptionService.isActive(clientId);
+
+      if (!allowedToCheckProduct) {
+        this.logger.warn(
+          `User with clientId: ${clientId} is not allowed to check product`,
+        );
+        await ctx.reply(
+          `У вас <b>закончились бесплатные проверки</b> и вы не можете больше проверять продукты. Пожалуйста, <b>подпишитесь на подписку</b>, чтобы продолжить.`,
+          { parse_mode: 'HTML' },
+        );
+
+        await ctx.replyWithChatAction('typing');
+
+        setTimeout(
+          async () => await this.goToScene(ctx, SCENES.TARIFFS),
+          TIMEOUTS.AFTER_START,
+        );
+
+        return;
+      }
+
       ctx.session.currentScene = SCENES.CHECK_PRODUCT;
       await this.checkProductScene.handle(ctx);
     });
@@ -121,7 +157,33 @@ export class ScenesOrchestratorService {
           await this.goToScene(ctx, SCENES.MAIN_MENU);
           break;
         case CALLBACK_DATA.GO_TO_CHECK_PRODUCT:
-          // TODO: Добавить проверку наличия бесплатных проверок или подписки. При необходимости - сообщение пользователю и перевод в сцену Tariffs
+          const clientId = ctx.from?.id;
+
+          if (!clientId) {
+            this.logger.error(`No clientId: ${clientId}`);
+            throw new ForbiddenException(`No clientId: ${clientId}`);
+          }
+
+          const allowedToCheckProduct =
+            await this.subscriptionService.isActive(clientId);
+
+          if (!allowedToCheckProduct) {
+            this.logger.warn(
+              `User with clientId: ${clientId} is not allowed to check product`,
+            );
+            await ctx.reply(
+              `У вас <b>закончились бесплатные проверки</b> и вы не можете больше проверять продукты. Пожалуйста, <b>подпишитесь на подписку</b>, чтобы продолжить.`,
+              { parse_mode: 'HTML' },
+            );
+
+            await ctx.replyWithChatAction('typing');
+
+            setTimeout(
+              async () => await this.goToScene(ctx, SCENES.TARIFFS),
+              TIMEOUTS.AFTER_START,
+            );
+            return;
+          }
 
           await this.goToScene(ctx, SCENES.CHECK_PRODUCT);
           break;
@@ -178,16 +240,24 @@ export class ScenesOrchestratorService {
         return;
       }
 
-      // TODO: Обработать успешную оплату, увеличить в БД кол-во доступных проверок или срок подписки, сохранить в БД запись об оплате (включая детали платежа) и перевести пользователя в главное меню
-
       this.logger.log(
         `Successful payment for clientId ${ctx.from.id}: ${JSON.stringify(
           ctx.message.successful_payment,
         )}`,
       );
 
+      await this.subscriptionService.updateOnSuccessfulPayment(
+        ctx.from.id,
+        ctx.message.successful_payment,
+      );
+
+      await this.paymentsService.createPaidRecord({
+        clientId: ctx.from.id,
+        successfulPayment: ctx.message.successful_payment,
+      });
+
       await ctx.reply(
-        '⭐ Оплата <b>прошла успешно</b> — благодарим за покупку\\!',
+        '⭐ Оплата <b>прошла успешно</b> — благодарим за покупку!',
         {
           parse_mode: 'HTML',
         },
@@ -266,7 +336,14 @@ export class ScenesOrchestratorService {
 
     if (analysisResult.status === 'Success' && analysisResult.payload) {
       if (Array.isArray(analysisResult.payload.messageChunks)) {
-        // TODO: Уменьшить в БД кол-во доступных проверок
+        const clientId = ctx.from?.id;
+
+        if (!clientId) {
+          this.logger.error(`No clientId: ${clientId}`);
+          throw new ForbiddenException(`No clientId: ${clientId}`);
+        }
+
+        await this.subscriptionService.updateOnCheckRequest(clientId);
 
         for (const msg of analysisResult.payload.messageChunks) {
           await ctx.reply(msg, { parse_mode: 'HTML' });
@@ -295,7 +372,14 @@ export class ScenesOrchestratorService {
         !analysisResult.payload.isContextCorrect &&
         analysisResult.payload.contextExplanation
       ) {
-        // TODO: Уменьшить в БД кол-во доступных проверок
+        const clientId = ctx.from?.id;
+
+        if (!clientId) {
+          this.logger.error(`No clientId: ${clientId}`);
+          throw new ForbiddenException(`No clientId: ${clientId}`);
+        }
+
+        await this.subscriptionService.updateOnCheckRequest(clientId);
 
         await ctx.reply(
           `Ты прислал фото, на котором отсутствует состав продукта:\n❗️ ${analysisResult.payload.contextExplanation}\n\nПожалуйста, отправь мне фото состава продукта, чтобы я смог провести анализ!`,
