@@ -12,7 +12,7 @@ export const dataSourceOptions: DataSourceOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   entities: ['dist/**/*.entity.js'], // CLI работает с скомпилированными .js файлами
-  migrations: ['dist/migrations/*.js'], // Указываем, где искать миграции
+  migrations: ['dist/migrations/*.js'],
   logging: true,
   synchronize: false, // synchronize всегда должен быть false при использовании миграций
 };

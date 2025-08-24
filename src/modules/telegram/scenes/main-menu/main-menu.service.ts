@@ -14,7 +14,7 @@ export class MainMenuSceneService implements IScene {
    * Этот метод не зависит от 'ctx' и может быть вызван откуда угодно.
    */
   public getMainMenuPayload(): { text: string; keyboard: InlineKeyboard } {
-    const text = `Ты находишся в *главном меню*\\. Что будем делать?
+    const text = `Ты находишся в <b>главном меню</b>. Что будем делать?
 Выбирай нужный пункт ниже — и продолжим 👇
 `;
     const keyboard = new InlineKeyboard()
@@ -55,6 +55,6 @@ export class MainMenuSceneService implements IScene {
 
     // Вне зависимости от того, как пользователь попал в эту сцену,
     // мы всегда отправляем новое сообщение с главным меню.
-    await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard });
+    await ctx.reply(text, { parse_mode: 'HTML', reply_markup: keyboard });
   }
 }
